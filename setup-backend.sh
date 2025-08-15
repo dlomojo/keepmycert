@@ -54,28 +54,28 @@ echo "✅ Directory structure created"
 echo "🔐 Creating environment variables template..."
 cat > .env.local.example << 'EOF'
 # Database (Vercel Postgres/Neon)
-DATABASE_URL="postgresql://..."
-DIRECT_URL="postgresql://..."
+DATABASE_URL="postgres://neondb_owner:npg_ZTC0Q1dGFWtc@ep-plain-frog-adk2appv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
+DIRECT_URL="postgres://neondb_owner:npg_ZTC0Q1dGFWtc@ep-plain-frog-adk2appv-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
 
 # Authentication (NextAuth)
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
+NEXTAUTH_URL="https://keepmycert.vercel.app/api/auth/login"
+NEXTAUTH_SECRET="ylQzTfQzqUfJqWscYMttofFzxRPFPpbvT3x2Vdg3nIP9Twfk1jvR2BQfdIy1lFLL"
 
 # OAuth Providers
-GOOGLE_CLIENT_ID=""
-GOOGLE_CLIENT_SECRET=""
+GOOGLE_CLIENT_ID="712693903461-vaep4j2pnkre3bq3fv6kj2smsrc91ahm.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="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"
 
 # Vercel Blob Storage
 BLOB_READ_WRITE_TOKEN=""
 
 # Email (Resend)
-RESEND_API_KEY=""
-EMAIL_FROM="noreply@keepmycert.com"
-EMAIL_REPLY_TO="support@keepmycert.com"
+RESEND_API_KEY="re_5Jbeq1C3_HvbLDMsp9FTPaXCdb5Y6CwEe"
+EMAIL_FROM="info@detachedsolution.us"
+EMAIL_REPLY_TO="info@detachedsolution.us
 
 # Stripe
-STRIPE_SECRET_KEY=""
-STRIPE_PUBLISHABLE_KEY=""
+STRIPE_SECRET_KEY="sk_test_51RfSXfPepyI5TpkddAXGIMwEVw5iDigiqZWgFxzeG9MZI6uYsFtvUUCPEYeDPy5bEnkLAAhReBQ3jLtjC6Uro6b400zO34LHNq"
+STRIPE_PUBLISHABLE_KEY="pk_test_51RfSXfPepyI5TpkdRSmqzCeH4vmfWn2yNREHnAErFle87h4Jgs6G5vjsLbu2bQnFOXd6jEs9QPJdsnS2zX2lrYp400KmKnwiai"
 STRIPE_WEBHOOK_SECRET=""
 STRIPE_PRICE_ID_PRO=""
 

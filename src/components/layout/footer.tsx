@@ -48,16 +48,7 @@ export function Footer() {
               <li>
                 <a href="#" className="hover:text-primary">Contact</a>
               </li>
-              <li>
-                <Link href="/legal/privacy" className="hover:text-primary">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="/legal/cookie" className="hover:text-primary">
-                  Cookie Policy
-                </Link>
-              </li>
+        
             </ul>
           </div>
         </div>
