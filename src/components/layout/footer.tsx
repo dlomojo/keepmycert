@@ -1,0 +1,48 @@
+import { Shield } from "lucide-react";
+
+export function Footer() {
+  return (
+    <footer className="border-t bg-background">
+      <div className="container mx-auto px-4 py-16">
+        <div className="grid gap-8 lg:grid-cols-4">
+          <div className="lg:col-span-2">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
+                <Shield className="h-4 w-4 text-white" />
+              </div>
+              <span className="text-xl font-bold">KeepMyCert</span>
+            </div>
+            <p className="text-sm text-muted-foreground max-w-xs mb-4">
+              AI-powered IT certification management for professionals who take their careers seriously.
+            </p>
+            <div className="text-xs text-muted-foreground">
+              Built by IT professionals, for IT professionals. 🤖 Powered by AI.
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="text-sm font-semibold mb-4">Product</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><a href="#" className="hover:text-primary">Features</a></li>
+              <li><a href="#" className="hover:text-primary">Pricing</a></li>
+              <li><a href="#" className="hover:text-primary">API</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="text-sm font-semibold mb-4">Support</h4>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li><a href="#" className="hover:text-primary">Help Center</a></li>
+              <li><a href="#" className="hover:text-primary">Contact</a></li>
+              <li><a href="#" className="hover:text-primary">Privacy</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t mt-16 pt-8 text-center text-sm text-muted-foreground">
+          <p>&copy; 2024 KeepMyCert by Detached Solutions LLC. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
