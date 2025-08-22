@@ -8,11 +8,15 @@ import { getActiveSubscriptionById } from '../db/queries';
 import { SubscriptionPlan } from './types';
 
 // Secret key for JWT verification
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.AUTH0_SECRET || process.env.NEXTAUTH_SECRET || (() => {
+function getJWTSecret(): Uint8Array {
+  const secret = process.env.AUTH0_SECRET || process.env.NEXTAUTH_SECRET;
+  if (!secret) {
     throw new Error('JWT_SECRET environment variable is required');
-  })()
-);
+  }
+  return new TextEncoder().encode(secret);
+}
+
+const JWT_SECRET = getJWTSecret();
 
 // Auth middleware configuration
 export interface AuthMiddlewareConfig {
