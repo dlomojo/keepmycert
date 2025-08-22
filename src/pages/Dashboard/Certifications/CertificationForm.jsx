@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKButton from "components/MKButton";
-import MKTypography from "components/MKTypography";
-import MKInput from "components/MKInput";
+import MKBox from "@/components/MKBox";
+import MKButton from "@/components/MKButton";
+import MKTypography from "@/components/MKTypography";
+import MKInput from "@/components/MKInput";
 
 // Material UI components
 import {
@@ -28,9 +28,9 @@ import {
 } from "@mui/material";
 
 // Hooks and services
-import { useCertifications } from "hooks/useCertifications";
-import { useVendors } from "hooks/useVendors";
-import { useFileUpload } from "hooks/useFileUpload";
+import { useCertifications } from "@/hooks/useCertifications";
+import { useVendors } from "@/hooks/useVendors";
+import { useFileUpload } from "@/hooks/useFileUpload";
 
 // Form validation
 import { useForm, Controller } from "react-hook-form";
