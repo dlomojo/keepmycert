@@ -1,23 +1,45 @@
 /**
- * Auth types for the application
+ * Authentication and user types for the application
  */
 
-export type UserRole = 'free' | 'pro' | 'team' | 'admin';
+// User subscription plans
+export type SubscriptionPlan = 'free' | 'pro' | 'team';
 
+// User subscription status
+export type SubscriptionStatus = 
+  | 'active'      // Subscription is active and paid
+  | 'trialing'    // User is in trial period
+  | 'past_due'    // Payment is past due
+  | 'canceled'    // Subscription has been canceled but still active
+  | 'inactive';   // No active subscription
+
+// User role types
+export type UserRole = 'user' | 'admin';
+
+// User subscription data
 export interface UserSubscription {
   id: string;
-  status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
-  plan: 'free' | 'pro' | 'team';
+  status: SubscriptionStatus;
+  plan: SubscriptionPlan;
   trialEnd?: Date;
   currentPeriodEnd: Date;
   cancelAtPeriodEnd: boolean;
 }
 
-export interface UserProfile {
-  id: string;
+// Base user profile from Auth0
+export interface Auth0UserProfile {
+  sub: string;         // Auth0 user ID
   email: string;
+  email_verified: boolean;
   name?: string;
+  nickname?: string;
   picture?: string;
+  updated_at: string;
+}
+
+// Extended user profile with subscription data
+export interface UserProfile extends Auth0UserProfile {
+  id: string;          // Our system's user ID (may be same as Auth0 sub)
   role: UserRole;
   subscription?: UserSubscription;
   metadata?: Record<string, any>;
@@ -25,6 +47,7 @@ export interface UserProfile {
   updatedAt: Date;
 }
 
+// Session user with essential data
 export interface SessionUser {
   id: string;
   email: string;
@@ -32,17 +55,27 @@ export interface SessionUser {
   picture?: string;
   role: UserRole;
   subscription?: {
-    plan: 'free' | 'pro' | 'team';
-    status: 'active' | 'canceled' | 'past_due' | 'trialing' | 'incomplete';
+    plan: SubscriptionPlan;
+    status: SubscriptionStatus;
   };
 }
 
-export interface AuthResult {
+// Auth context return type
+export interface AuthContextType {
   user: SessionUser | null;
-  error?: string;
   loading: boolean;
+  error?: string;
+  login: (redirectUri?: string) => Promise<void>;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  isSubscribed: boolean;
+  isPro: boolean;
+  isTeam: boolean;
+  isAdmin: boolean;
+  refreshUser: () => Promise<void>;
 }
 
+// Features available per subscription plan
 export interface PlanFeatures {
   maxCertificates: number;
   aiFeatures: boolean;
@@ -52,7 +85,8 @@ export interface PlanFeatures {
   advancedAnalytics: boolean;
 }
 
-export const PLAN_FEATURES: Record<'free' | 'pro' | 'team', PlanFeatures> = {
+// Plan features configuration
+export const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeatures> = {
   free: {
     maxCertificates: 5,
     aiFeatures: false,
