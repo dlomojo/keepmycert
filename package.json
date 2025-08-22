@@ -55,7 +55,8 @@
     "pg": "^8.13.1",
     "@types/pg": "^8.11.10",
     "yup": "^1.4.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "firebase": "^10.13.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
