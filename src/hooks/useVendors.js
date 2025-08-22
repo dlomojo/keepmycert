@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { vendorsService } from "services/vendorsService";
+import { vendorsService } from "@/services/vendorsService";
 
 export const useVendors = () => {
   const [vendors, setVendors] = useState([]);

@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKTypography from "components/MKTypography";
-import MKButton from "components/MKButton";
-import MKInput from "components/MKInput";
+import MKBox from "@/components/MKBox";
+import MKTypography from "@/components/MKTypography";
+import MKButton from "@/components/MKButton";
+import MKInput from "@/components/MKInput";
 
 // Material UI components
 import {
@@ -37,10 +37,10 @@ import {
 } from "@mui/icons-material";
 
 // Hooks and services
-import { useCertifications } from "hooks/useCertifications";
+import { useCertifications } from "@/hooks/useCertifications";
 
 // Utilities
-import { formatDate, getDaysUntilExpiry } from "utils/dateUtils";
+import { formatDate, getDaysUntilExpiry } from "@/utils/dateUtils";
 
 function Certifications() {
   const { certifications, loading, error, deleteCertification } = useCertifications();
