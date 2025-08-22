@@ -1,57 +1,27 @@
-/**
- * React hooks for Auth0 authentication
- */
 import { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
-import { 
-  login as auth0Login,
-  logout as auth0Logout,
-  getUserProfile,
-  initializeAuth0,
-  handleAuthCallback
-} from './auth0';
-import { SessionUser, AuthContextType, SubscriptionStatus } from './types';
+import { SessionUser, AuthContextType } from './types';
 
-// Create auth context
+// Auth stubs
+const stubs = {
+  login: async () => console.log('Auth login stub'),
+  logout: async () => console.log('Auth logout stub'),
+  getProfile: async () => null,
+  init: async () => console.log('Auth init stub'),
+  handleCallback: async () => console.log('Auth callback stub')
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/**
- * Auth context provider
- */
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<SessionUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const [error, setError] = useState<string>();
 
-  // Check if URL contains auth callback
-  const isCallback = typeof window !== 'undefined' && 
-    window.location.search.includes('code=') && 
-    window.location.search.includes('state=');
-
-  // Get user profile
   const getProfile = useCallback(async () => {
     try {
-      const profile = await getUserProfile();
-      
-      if (profile) {
-        // Create session user with essential data
-        const sessionUser: SessionUser = {
-          id: profile.id,
-          email: profile.email,
-          name: profile.name,
-          picture: profile.picture,
-          role: profile.role,
-          subscription: profile.subscription ? {
-            plan: profile.subscription.plan,
-            status: profile.subscription.status
-          } : undefined
-        };
-        
-        setUser(sessionUser);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      console.error('Error fetching user profile:', err);
+      const profile = await stubs.getProfile();
+      setUser(profile);
+    } catch {
       setError('Failed to fetch user profile');
       setUser(null);
     } finally {
@@ -59,109 +29,64 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
-  // Handle auth callback
-  const handleCallback = useCallback(async () => {
-    try {
-      await handleAuthCallback();
-      // Remove callback URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname);
-      await getProfile();
-    } catch (err) {
-      console.error('Error handling auth callback:', err);
-      setError('Authentication failed');
-      setLoading(false);
-    }
-  }, [getProfile]);
-
-  // Initialize auth
   useEffect(() => {
-    const initializeAuth = async () => {
+    const init = async () => {
       try {
-        await initializeAuth0();
+        await stubs.init();
+        const isCallback = typeof window !== 'undefined' && 
+          window.location.search.includes('code=');
         
         if (isCallback) {
-          await handleCallback();
-        } else {
-          await getProfile();
+          await stubs.handleCallback();
+          window.history.replaceState({}, '', window.location.pathname);
         }
-      } catch (err) {
-        console.error('Error initializing Auth0:', err);
+        await getProfile();
+      } catch {
         setError('Failed to initialize authentication');
         setLoading(false);
       }
     };
+    init();
+  }, [getProfile]);
 
-    initializeAuth();
-  }, [getProfile, handleCallback, isCallback]);
-
-  // Login function
-  const login = useCallback(async (redirectUri?: string) => {
+  const login = useCallback(async () => {
     setLoading(true);
     try {
-      await auth0Login(redirectUri);
-    } catch (err) {
-      console.error('Login error:', err);
+      await stubs.login();
+    } catch {
       setError('Login failed');
       setLoading(false);
     }
   }, []);
 
-  // Logout function
   const logout = useCallback(async () => {
     setLoading(true);
     try {
-      await auth0Logout();
+      await stubs.logout();
       setUser(null);
-    } catch (err) {
-      console.error('Logout error:', err);
-      setError('Logout failed');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Refresh user data
   const refreshUser = useCallback(async () => {
     setLoading(true);
     await getProfile();
   }, [getProfile]);
 
-  // Calculate subscription status helpers
-  const isAuthenticated = !!user;
-  
-  const isSubscribed = useMemo(() => {
-    if (!user?.subscription) return false;
-    return ['active', 'trialing'].includes(user.subscription.status);
-  }, [user]);
-  
-  const isPro = useMemo(() => {
-    if (!isSubscribed) return false;
-    return user?.subscription?.plan === 'pro';
-  }, [isSubscribed, user]);
-  
-  const isTeam = useMemo(() => {
-    if (!isSubscribed) return false;
-    return user?.subscription?.plan === 'team';
-  }, [isSubscribed, user]);
-  
-  const isAdmin = useMemo(() => {
-    return user?.role === 'admin';
-  }, [user]);
-
-  // Create context value
-  const contextValue: AuthContextType = {
+  const contextValue = useMemo(() => ({
     user,
     loading,
     error,
     login,
     logout,
-    isAuthenticated,
-    isSubscribed,
-    isPro,
-    isTeam,
-    isAdmin,
+    isAuthenticated: !!user,
+    isSubscribed: user?.subscription ? ['active', 'trialing'].includes(user.subscription.status) : false,
+    isPro: user?.subscription?.plan === 'pro',
+    isTeam: user?.subscription?.plan === 'team',
+    isAdmin: user?.role === 'admin',
     refreshUser
-  };
+  }), [user, loading, error, login, logout, refreshUser]);
 
   return (
     <AuthContext.Provider value={contextValue}>
@@ -170,23 +95,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-/**
- * Hook to use auth context
- */
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
 
-/**
- * Hook to check if user has access to pro features
- */
-export const useProAccess = () => {
+export const useProAccess = (): boolean => {
   const { isPro, isTeam, isAdmin } = useAuth();
   return isPro || isTeam || isAdmin;
 };
