@@ -3,11 +3,11 @@ import { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
+import MKBox from "@/components/MKBox";
 
 // Material Kit 2 React examples
-import DefaultNavbar from "examples/Navbars/DefaultNavbar";
-import DefaultFooter from "examples/Footers/DefaultFooter";
+import DefaultNavbar from "@/examples/Navbars/DefaultNavbar";
+import DefaultFooter from "@/examples/Footers/DefaultFooter";
 
 // Routes
 import routes from "routes";

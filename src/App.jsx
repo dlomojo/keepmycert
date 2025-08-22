@@ -30,8 +30,8 @@ import Settings from "pages/Dashboard/Settings";
 import NotFound from "pages/NotFound";
 
 // Components
-import ProtectedRoute from "components/common/ProtectedRoute";
-import ScrollToTop from "components/common/ScrollToTop";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
+import ScrollToTop from "@/components/common/ScrollToTop";
 
 export default function App() {
   return (

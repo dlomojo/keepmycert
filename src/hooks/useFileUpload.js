@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "config/firebase";
+import { storage } from "@/config/firebase";
 import { v4 as uuidv4 } from "uuid";
 
 export const useFileUpload = () => {

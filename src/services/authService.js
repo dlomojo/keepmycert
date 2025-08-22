@@ -10,7 +10,7 @@ import {
   signInWithPopup
 } from "firebase/auth";
 import { doc, setDoc, getDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "config/firebase";
+import { db } from "@/config/firebase";
 
 const auth = getAuth();
 const googleProvider = new GoogleAuthProvider();

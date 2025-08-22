@@ -2,9 +2,9 @@
 import { useNavigate } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKTypography from "components/MKTypography";
-import MKButton from "components/MKButton";
+import MKBox from "@/components/MKBox";
+import MKTypography from "@/components/MKTypography";
+import MKButton from "@/components/MKButton";
 
 // Icons
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";

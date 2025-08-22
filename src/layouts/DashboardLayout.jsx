@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Outlet } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
+import MKBox from "@/components/MKBox";
 
 // Material UI components
 import { 

@@ -2,20 +2,20 @@
 import { Link } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKButton from "components/MKButton";
-import MKTypography from "components/MKTypography";
-import MKAvatar from "components/MKAvatar";
+import MKBox from "@/components/MKBox";
+import MKButton from "@/components/MKButton";
+import MKTypography from "@/components/MKTypography";
+import MKAvatar from "@/components/MKAvatar";
 
 // Material Kit 2 React examples
-import DefaultInfoCard from "examples/Cards/InfoCards/DefaultInfoCard";
-import CenteredBlogCard from "examples/Cards/BlogCards/CenteredBlogCard";
+import DefaultInfoCard from "@/examples/Cards/InfoCards/DefaultInfoCard";
+import CenteredBlogCard from "@/examples/Cards/BlogCards/CenteredBlogCard";
 
 // Images
-import bgImage from "assets/images/bg-hero.jpg";
-import team1 from "assets/images/team-1.jpg";
-import team2 from "assets/images/team-2.jpg";
-import team3 from "assets/images/team-3.jpg";
+import bgImage from "@/assets/images/bg-hero.jpg";
+import team1 from "@/assets/images/team-1.jpg";
+import team2 from "@/assets/images/team-2.jpg";
+import team3 from "@/assets/images/team-3.jpg";
 
 function Home() {
   return (
