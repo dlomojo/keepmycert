@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { getActiveSubscriptionById } from '../db/queries';
-import { SubscriptionPlan } from './types';
+// import { SubscriptionPlan } from './types'; // Unused import
 
 // Secret key for JWT verification
 function getJWTSecret(): Uint8Array {

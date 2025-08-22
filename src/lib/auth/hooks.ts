@@ -1,7 +1,7 @@
 /**
  * React hooks for Auth0 authentication
  */
-import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
 import { 
   login as auth0Login,
   logout as auth0Logout,

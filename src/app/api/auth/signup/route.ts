@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { prisma } from '@/lib/db/db';
+import { prisma } from '@/lib/db/client';
 import { sendEmail } from '@/lib/email/email';
 
 // Validation schema
@@ -307,7 +307,7 @@ The KeepMyCert Team
 }
 
 // OPTIONS method for CORS preflight
-export async function OPTIONS(req: NextRequest) {
+export async function OPTIONS() {
   return new NextResponse(null, {
     status: 200,
     headers: {

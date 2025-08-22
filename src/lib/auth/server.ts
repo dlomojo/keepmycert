@@ -11,7 +11,7 @@ import { UserRole, SessionUser } from './types';
 /**
  * Get server session
  */
-export async function getSession(req: any, res?: any) {
+export async function getSession(req?: NextApiRequest | NextRequest, res?: NextApiResponse) {
   try {
     if (res) {
       return await getServerSession(req, res, authOptions);
@@ -26,7 +26,7 @@ export async function getSession(req: any, res?: any) {
 /**
  * Get user from session (server-side)
  */
-export async function getSessionUser(req: any, res?: any): Promise<SessionUser | null> {
+export async function getSessionUser(req?: NextApiRequest | NextRequest, res?: NextApiResponse): Promise<SessionUser | null> {
   const session = await getSession(req, res);
   return session?.user as SessionUser || null;
 }
@@ -166,7 +166,7 @@ export async function updateUserRoles(userId: string, roles: string[]) {
 /**
  * Update user subscription in Auth0
  */
-export async function updateUserSubscription(userId: string, subscription: any) {
+export async function updateUserSubscription(userId: string, subscription: Record<string, unknown>) {
   try {
     const token = await getAuth0ManagementToken();
     
