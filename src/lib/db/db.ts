@@ -15,7 +15,7 @@ const pool = process.env.DATABASE_URL
     })
   : null;
 
-export async function query(text: string, params?: any[]) {
+export async function query(text: string, params?: unknown[]) {
   if (!pool) {
     throw new Error('Database connection not initialized');
   }
@@ -29,6 +29,8 @@ export async function query(text: string, params?: any[]) {
   }
 }
 
-export default {
+const db = {
   query
 };
+
+export default db;

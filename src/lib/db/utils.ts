@@ -23,15 +23,15 @@ export async function executeQuery<T>(
 /**
  * Create a paginated query
  */
-export function createPaginatedQuery<T extends object>(
+export function createPaginatedQuery(
   modelName: string,
   options: {
     page?: number;
     limit?: number;
-    where?: any;
-    orderBy?: any;
-    include?: any;
-    select?: any;
+    where?: Record<string, unknown>;
+    orderBy?: Record<string, unknown>;
+    include?: Record<string, unknown>;
+    select?: Record<string, unknown>;
   } = {}
 ) {
   const {
@@ -46,7 +46,10 @@ export function createPaginatedQuery<T extends object>(
   const skip = (page - 1) * limit;
 
   // Get the prisma model dynamically
-  const model = prisma[modelName as keyof typeof prisma] as any;
+  const model = prisma[modelName as keyof typeof prisma] as {
+    count: (args: { where: Record<string, unknown> }) => Promise<number>;
+    findMany: (args: Record<string, unknown>) => Promise<unknown[]>;
+  };
 
   // Count query
   const countQuery = model.count({

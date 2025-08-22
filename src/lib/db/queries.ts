@@ -36,7 +36,7 @@ export async function getCertificationsWithStatus(
   nextMonth.setMonth(now.getMonth() + 1);
 
   // Build where clause
-  let where: Prisma.CertificationWhereInput = {
+  const where: Prisma.CertificationWhereInput = {
     userId,
     ...(vendorId ? { vendorId } : {}),
     ...(search

@@ -43,6 +43,8 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
   }
 }
 
-export default {
+const emailService = {
   sendEmail
 };
+
+export default emailService;

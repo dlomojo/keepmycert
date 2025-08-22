@@ -42,7 +42,7 @@ export interface UserProfile extends Auth0UserProfile {
   id: string;          // Our system's user ID (may be same as Auth0 sub)
   role: UserRole;
   subscription?: UserSubscription;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }
