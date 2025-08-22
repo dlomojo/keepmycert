@@ -11,11 +11,11 @@ import MKAvatar from "@/components/MKAvatar";
 import DefaultInfoCard from "@/examples/Cards/InfoCards/DefaultInfoCard";
 import CenteredBlogCard from "@/examples/Cards/BlogCards/CenteredBlogCard";
 
-// Images
-import bgImage from "@/assets/images/bg-hero.jpg";
-import team1 from "@/assets/images/team-1.jpg";
-import team2 from "@/assets/images/team-2.jpg";
-import team3 from "@/assets/images/team-3.jpg";
+// Images - TODO: Add actual image files
+// import bgImage from "@/assets/images/bg-hero.jpg";
+// import team1 from "@/assets/images/team-1.jpg";
+// import team2 from "@/assets/images/team-2.jpg";
+// import team3 from "@/assets/images/team-3.jpg";
 
 function Home() {
   return (
@@ -25,7 +25,7 @@ function Home() {
         minHeight="75vh"
         width="100%"
         sx={{
-          backgroundImage: `url(${bgImage})`,
+          backgroundColor: "#f0f0f0", // backgroundImage: `url(${bgImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           display: "grid",
@@ -152,19 +152,16 @@ function Home() {
           px={{ xs: 2, lg: 8 }}
         >
           <CenteredBlogCard
-            image={team1}
             title="Sarah Johnson"
             description="'KeepMyCert saved me from letting my AWS certifications expire. The reminders are perfectly timed!'"
             action={{ type: "internal", route: "#", label: "Network Engineer" }}
           />
           <CenteredBlogCard
-            image={team2}
             title="Michael Chen"
             description="'Managing certs for my entire team used to be a nightmare. This platform made it simple and stress-free.'"
             action={{ type: "internal", route: "#", label: "IT Director" }}
           />
           <CenteredBlogCard
-            image={team3}
             title="Jessica Williams"
             description="'The dashboard gives me a perfect overview of what's coming up. No more spreadsheets or calendar reminders!'"
             action={{ type: "internal", route: "#", label: "Security Specialist" }}
@@ -178,7 +175,7 @@ function Home() {
           Ready to take control of your certifications?
         </MKTypography>
         <MKTypography variant="body1" color="text" mb={6} px={6} mx="auto" maxWidth="800px">
-          Join thousands of IT professionals who trust KeepMyCert to manage their certification lifecycle.
+          Join other IT professionals who trust KeepMyCert to manage their certification lifecycle.
           Start with our free plan today.
         </MKTypography>
         <MKButton
