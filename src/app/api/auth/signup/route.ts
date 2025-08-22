@@ -2,8 +2,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
-import { prisma } from '@/lib/db';
-import { sendEmail } from '@/lib/email';
+import { prisma } from '@/lib/db/db';
+import { sendEmail } from '@/lib/email/email';
 
 // Validation schema
 const signupSchema = z.object({
