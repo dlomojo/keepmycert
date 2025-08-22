@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKTypography from "components/MKTypography";
-import MKButton from "components/MKButton";
+import MKBox from "@/components/MKBox";
+import MKTypography from "@/components/MKTypography";
+import MKButton from "@/components/MKButton";
 
 // Material UI components
 import { Card, CardContent, Grid } from "@mui/material";

@@ -2,9 +2,9 @@
 import { Link } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKTypography from "components/MKTypography";
-import MKButton from "components/MKButton";
+import MKBox from "@/components/MKBox";
+import MKTypography from "@/components/MKTypography";
+import MKButton from "@/components/MKButton";
 
 // Material UI components
 import { Card, CardContent, CardActions, Chip, Divider, LinearProgress } from "@mui/material";
@@ -13,7 +13,7 @@ import { Card, CardContent, CardActions, Chip, Divider, LinearProgress } from "@
 import { MoreVert as MoreIcon, AccessTime as TimeIcon } from "@mui/icons-material";
 
 // Utilities
-import { formatDate, getDaysUntilExpiry } from "utils/dateUtils";
+import { formatDate, getDaysUntilExpiry } from "@/utils/dateUtils";
 
 function CertificationCard({ certification }) {
   // Calculate days until expiry
