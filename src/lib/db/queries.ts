@@ -166,15 +166,15 @@ export async function getCertificationStats(userId: string) {
   nextMonth.setMonth(now.getMonth() + 1);
 
   return executeQuery(async () => {
-    const stats = await prisma.$queryRaw`
-      SELECT
-        COUNT(*) as total,
-        COUNT(CASE WHEN "expiryDate" > ${nextMonth} THEN 1 END) as active,
-        COUNT(CASE WHEN "expiryDate" <= ${nextMonth} AND "expiryDate" > ${now} THEN 1 END) as expiring,
-        COUNT(CASE WHEN "expiryDate" <= ${now} THEN 1 END) as expired
-      FROM "Certification"
-      WHERE "userId" = ${userId}
-    `;
+    // Use Prisma aggregation instead of raw SQL for better type safety
+    const [total, active, expiring, expired] = await Promise.all([
+      prisma.certification.count({ where: { userId } }),
+      prisma.certification.count({ where: { userId, expiryDate: { gt: nextMonth } } }),
+      prisma.certification.count({ where: { userId, expiryDate: { lte: nextMonth, gt: now } } }),
+      prisma.certification.count({ where: { userId, expiryDate: { lte: now } } })
+    ]);
+    
+    const stats = [{ total, active, expiring, expired }];
 
     return stats[0];
   });

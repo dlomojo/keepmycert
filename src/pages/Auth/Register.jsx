@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKTypography from "components/MKTypography";
-import MKInput from "components/MKInput";
-import MKButton from "components/MKButton";
+import MKBox from "@/components/MKBox";
+import MKTypography from "@/components/MKTypography";
+import MKInput from "@/components/MKInput";
+import MKButton from "@/components/MKButton";
 
 // Material UI components
 import {
@@ -30,7 +30,7 @@ import {
 } from "@mui/icons-material";
 
 // Hooks
-import { useAuth } from "contexts/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Form validation
 import { useForm, Controller } from "react-hook-form";

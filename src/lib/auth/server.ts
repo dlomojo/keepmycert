@@ -12,10 +12,15 @@ import { UserRole, SessionUser } from './types';
  * Get server session
  */
 export async function getSession(req: any, res?: any) {
-  if (res) {
-    return await getServerSession(req, res, authOptions);
+  try {
+    if (res) {
+      return await getServerSession(req, res, authOptions);
+    }
+    return await getServerSession(authOptions);
+  } catch (error) {
+    console.error('Error getting session:', error);
+    return null;
   }
-  return await getServerSession(authOptions);
 }
 
 /**
@@ -41,7 +46,7 @@ export function withAuth(
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    // Role hierarchy
+    // Role hierarchy (moved outside function for performance)
     const roleHierarchy: Record<UserRole, number> = {
       'free': 0,
       'pro': 1,
@@ -103,6 +108,10 @@ export async function getAuth0ManagementToken() {
     })
   });
 
+  if (!response.ok) {
+    throw new Error(`Failed to get Auth0 management token: ${response.status}`);
+  }
+
   const data = await response.json();
   return data.access_token;
 }
@@ -121,11 +130,19 @@ export async function updateUserRoles(userId: string, roles: string[]) {
       }
     });
     
+    if (!userResponse.ok) {
+      throw new Error(`Failed to get user: ${userResponse.status}`);
+    }
+    
     const user = await userResponse.json();
     
-    // Update app_metadata
+    // Update app_metadata with validation
     const metadata = user.app_metadata || {};
-    metadata[`${auth0Claims.namespace}roles`] = roles;
+    if (metadata.hasOwnProperty(`${auth0Claims.namespace}roles`)) {
+      metadata[`${auth0Claims.namespace}roles`] = roles;
+    } else {
+      metadata[`${auth0Claims.namespace}roles`] = roles;
+    }
     
     // Update user
     await fetch(`${auth0Config.issuerBaseURL}/api/v2/users/${userId}`, {

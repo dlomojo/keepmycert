@@ -9,7 +9,9 @@ import { SubscriptionPlan } from './types';
 
 // Secret key for JWT verification
 const JWT_SECRET = new TextEncoder().encode(
-  process.env.AUTH0_SECRET || process.env.NEXTAUTH_SECRET || 'your-secret-key'
+  process.env.AUTH0_SECRET || process.env.NEXTAUTH_SECRET || (() => {
+    throw new Error('JWT_SECRET environment variable is required');
+  })()
 );
 
 // Auth middleware configuration
@@ -71,7 +73,9 @@ export async function authMiddleware(
   // No session token, redirect to login
   if (!sessionToken && config.requireAuth) {
     const loginUrl = new URL('/auth/login', origin);
-    loginUrl.searchParams.set('returnTo', pathname);
+    // Sanitize pathname to prevent XSS
+    const sanitizedPathname = pathname.replace(/[<>"'&]/g, '');
+    loginUrl.searchParams.set('returnTo', sanitizedPathname);
     return NextResponse.redirect(loginUrl);
   }
   
@@ -113,7 +117,9 @@ export async function authMiddleware(
     
     if (config.requireAuth) {
       const loginUrl = new URL('/auth/login', origin);
-      loginUrl.searchParams.set('returnTo', pathname);
+      // Sanitize pathname to prevent XSS
+      const sanitizedPathname = pathname.replace(/[<>"'&]/g, '');
+      loginUrl.searchParams.set('returnTo', sanitizedPathname);
       return NextResponse.redirect(loginUrl);
     }
     

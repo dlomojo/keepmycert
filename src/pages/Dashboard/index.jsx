@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 // Material Kit 2 React components
-import MKBox from "components/MKBox";
-import MKTypography from "components/MKTypography";
-import MKButton from "components/MKButton";
-import MKAvatar from "components/MKAvatar";
+import MKBox from "@/components/MKBox";
+import MKTypography from "@/components/MKTypography";
+import MKButton from "@/components/MKButton";
+import MKAvatar from "@/components/MKAvatar";
 
 // Material UI components
 import {
@@ -31,12 +31,12 @@ import {
 } from "@mui/icons-material";
 
 // Hooks and services
-import { useCertifications } from "hooks/useCertifications";
+import { useCertifications } from "@/hooks/useCertifications";
 
 // Components
-import CertificationCard from "components/features/CertificationCard";
-import DashboardWelcomeCard from "components/features/DashboardWelcomeCard";
-import StatsCard from "components/features/StatsCard";
+import CertificationCard from "@/components/features/CertificationCard";
+import DashboardWelcomeCard from "@/components/features/DashboardWelcomeCard";
+import StatsCard from "@/components/features/StatsCard";
 
 function Dashboard() {
   const { certifications, loading, error } = useCertifications();
@@ -50,15 +50,17 @@ function Dashboard() {
 
   useEffect(() => {
     if (certifications) {
+      // Cache current date to avoid multiple new Date() calls
+      const currentDate = new Date();
+      
       // Calculate stats
       const total = certifications.length;
       const expired = certifications.filter(cert => 
-        new Date(cert.expiryDate) < new Date()
+        new Date(cert.expiryDate) < currentDate
       ).length;
       const expiringSoon = certifications.filter(cert => {
         const expiryDate = new Date(cert.expiryDate);
-        const today = new Date();
-        const diffTime = expiryDate - today;
+        const diffTime = expiryDate - currentDate;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         return diffDays > 0 && diffDays <= 90;
       }).length;
@@ -73,7 +75,7 @@ function Dashboard() {
 
       // Set upcoming renewals
       const upcoming = certifications
-        .filter(cert => new Date(cert.expiryDate) > new Date())
+        .filter(cert => new Date(cert.expiryDate) > currentDate)
         .sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate))
         .slice(0, 5);
       setUpcomingRenewals(upcoming);

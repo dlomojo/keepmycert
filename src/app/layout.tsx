@@ -30,7 +30,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background antialiased`}
       >
-        {children}
+        <div suppressHydrationWarning>
+          {children}
+        </div>
         <CookieConsentBanner />
         {/* <AnalyticsLoader /> */}
       </body>

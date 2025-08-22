@@ -7,8 +7,10 @@ import { Pool } from 'pg'; // If you're using PostgreSQL
 const pool = process.env.DATABASE_URL 
   ? new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: {
-        rejectUnauthorized: false // Required for some hosting environments
+      ssl: process.env.NODE_ENV === 'production' ? {
+        rejectUnauthorized: true // Always verify SSL certificates in production
+      } : {
+        rejectUnauthorized: false // Allow self-signed certificates in development
       }
     })
   : null;
