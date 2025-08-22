@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, createContext, useContext, useMemo } from 'react';
 import { SessionUser, AuthContextType } from './types';
 
 // Auth stubs
@@ -88,11 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     refreshUser
   }), [user, loading, error, login, logout, refreshUser]);
 
-  return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return React.createElement(AuthContext.Provider, { value: contextValue }, children);
 };
 
 export const useAuth = (): AuthContextType => {
