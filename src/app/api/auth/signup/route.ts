@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     console.error('Signup error:', error);
     
     // Handle specific database errors
-    if (error?.code === 'P2002') {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
       return NextResponse.json(
         { error: 'An account with this email already exists' },
         { status: 409 }
