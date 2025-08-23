@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
       { 
         error: 'Failed to create account. Please try again.',
         ...(process.env.NODE_ENV === 'development' && { 
-          debug: error.message 
+          debug: error instanceof Error ? error.message : String(error)
         })
       },
       { status: 500 }
@@ -122,11 +122,10 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Send welcome email function
-async function sendWelcomeEmail(email: string, name: string | null) {
-  const welcomeTemplate = {
-    subject: 'Welcome to KeepMyCert! 🎉',
-    html: `
+// Email template (moved outside function for performance)
+const WELCOME_EMAIL_TEMPLATE = {
+  subject: 'Welcome to KeepMyCert! 🎉',
+  getHtml: (name: string | null) => `
       <!DOCTYPE html>
       <html>
         <head>
@@ -266,8 +265,8 @@ async function sendWelcomeEmail(email: string, name: string | null) {
           </div>
         </body>
       </html>
-    `,
-    text: `
+  `,
+  getText: (name: string | null) => `
 Welcome to KeepMyCert!
 
 Hi ${name || 'there'},
@@ -297,12 +296,16 @@ Best regards,
 The KeepMyCert Team
 
 © 2025 KeepMyCert by Detached Solutions LLC
-    `.trim()
-  };
-  
+  `.trim()
+};
+
+// Send welcome email function
+async function sendWelcomeEmail(email: string, name: string | null) {
   await sendEmail({
     to: email,
-    ...welcomeTemplate
+    subject: WELCOME_EMAIL_TEMPLATE.subject,
+    html: WELCOME_EMAIL_TEMPLATE.getHtml(name),
+    text: WELCOME_EMAIL_TEMPLATE.getText(name)
   });
 }
 
