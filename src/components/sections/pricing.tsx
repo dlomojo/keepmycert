@@ -1,7 +1,6 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
 
 export function PricingSection() {
   const plans = [
@@ -16,8 +15,7 @@ export function PricingSection() {
         "Mobile app access",
         "Community support",
       ],
-      cta: "Get Started",
-      href: "/auth/signup",
+      cta: "Coming Soon",
       popular: false,
     },
     {
@@ -33,8 +31,7 @@ export function PricingSection() {
         "Export & reporting tools",
         "Calendar integrations",
       ],
-      cta: "Start 14-Day Trial",
-      href: "/auth/signup?plan=pro",
+      cta: "Coming Soon",
       popular: true,
     },
     {
@@ -50,8 +47,7 @@ export function PricingSection() {
         "SSO integration",
         "Dedicated account manager",
       ],
-      cta: "Contact Sales",
-      href: "/contact",
+      cta: "Coming Soon",
       popular: false,
     },
   ];
@@ -90,18 +86,17 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <Link href={plan.href}>
-                  <Button 
-                    className={`w-full ${
-                      plan.popular 
-                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700' 
-                        : ''
-                    }`}
-                    variant={plan.popular ? 'default' : 'outline'}
-                  >
-                    {plan.cta}
-                  </Button>
-                </Link>
+                <Button 
+                  className={`w-full ${
+                    plan.popular 
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700' 
+                      : ''
+                  }`}
+                  variant={plan.popular ? 'default' : 'outline'}
+                  disabled
+                >
+                  {plan.cta}
+                </Button>
               </CardContent>
             </Card>
           ))}

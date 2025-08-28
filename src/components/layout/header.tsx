@@ -1,12 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { Shield, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+    setMobileMenuOpen(false);
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -20,23 +27,24 @@ export function Header() {
           </div>
           
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="#features" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <button 
+              onClick={() => scrollToSection('features')}
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
               Features
-            </Link>
-            <Link href="#pricing" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            </button>
+            <button 
+              onClick={() => scrollToSection('pricing')}
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
               Pricing
-            </Link>
-            <Link href="#faq" className="text-sm font-medium text-muted-foreground hover:text-primary">
-              FAQ
-            </Link>
-            <Link href="/auth/login">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link href="/auth/signup">
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
-                Start Free
-              </Button>
-            </Link>
+            </button>
+            <a href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
+              Dashboard
+            </a>
+            <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+              Coming Soon
+            </Button>
           </div>
 
           <button 
@@ -46,6 +54,31 @@ export function Header() {
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
+        
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t bg-background/95 backdrop-blur">
+            <div className="container mx-auto px-4 py-4 space-y-4">
+              <button 
+                onClick={() => scrollToSection('features')}
+                className="block text-sm font-medium text-muted-foreground hover:text-primary"
+              >
+                Features
+              </button>
+              <button 
+                onClick={() => scrollToSection('pricing')}
+                className="block text-sm font-medium text-muted-foreground hover:text-primary"
+              >
+                Pricing
+              </button>
+              <a href="/dashboard" className="block text-sm font-medium text-muted-foreground hover:text-primary">
+                Dashboard
+              </a>
+              <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+                Coming Soon
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

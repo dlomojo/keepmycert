@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  plan      String   @default("FREE") // FREE, PRO, TEAM
+  timezone  String   @default("UTC")
+  stripeCustomerId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  certifications Certification[]
+  teamMemberships TeamMember[]
+  ownedTeams     Team[]
+  subscription   Subscription?
+  teamInvites    TeamInvite[]
+
+  @@map("users")
+}
+
+model Subscription {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  plan             String   // PRO, TEAM
+  status           String   // active, canceled, past_due
+  currentPeriodEnd DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  owner         User             @relation(fields: [ownerId], references: [id])
+  members       TeamMember[]
+  certifications Certification[]
+  invites       TeamInvite[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String @id @default(cuid())
+  teamId   String
+  userId   String
+  role     String @default("MEMBER") // MANAGER, MEMBER
+  joinedAt DateTime @default(now())
+
+  team Team @relation(fields: [teamId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model TeamInvite {
+  id        String    @id @default(cuid())
+  teamId    String
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  team Team @relation(fields: [teamId], references: [id])
+
+  @@map("team_invites")
+}
+
+model Certification {
+  id             String    @id @default(cuid())
+  title          String
+  issuer         String?
+  certificateNumber String?
+  acquiredOn     DateTime?
+  expiresOn      DateTime?
+  attachmentUrl  String?
+  status         String    @default("ACTIVE") // ACTIVE, EXPIRED, EXPIRING_SOON
+  
+  // Ownership - either personal or team-based
+  ownerUserId    String?   // Personal cert
+  teamId         String?   // Team cert
+  memberUserId   String?   // Which team member owns this cert
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  owner User? @relation(fields: [ownerUserId], references: [id])
+  team  Team? @relation(fields: [teamId], references: [id])
+
+  @@map("certifications")
+}

@@ -1,6 +1,3 @@
-"use client";
-
-import Link from "next/link";
 import { ArrowRight, Bot, Brain, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -24,17 +21,13 @@ export function HeroSection() {
             </div>
             
             <div className="flex flex-col gap-4 min-[400px]:flex-row">
-              <Link href="/auth/signup">
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="lg">
-                  Start Free Trial
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button variant="outline" size="lg">
-                  Try Demo Dashboard
-                </Button>
-              </Link>
+              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="lg">
+                Coming Soon
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              <Button variant="outline" size="lg">
+                Learn More
+              </Button>
             </div>
             
             <div className="grid grid-cols-3 gap-8 pt-8">

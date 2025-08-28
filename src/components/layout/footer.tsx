@@ -1,5 +1,6 @@
+"use client";
+
 import { Shield } from "lucide-react";
-import Link from "next/link";
 
 export function Footer() {
   return (
@@ -27,13 +28,23 @@ export function Footer() {
             <h4 className="text-sm font-semibold mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-primary">Features</a>
+                <button 
+                  onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="hover:text-primary"
+                >
+                  Features
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">Pricing</a>
+                <button 
+                  onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="hover:text-primary"
+                >
+                  Pricing
+                </button>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">API</a>
+                <span className="text-muted-foreground/50">API (Coming Soon)</span>
               </li>
             </ul>
           </div>
@@ -43,29 +54,20 @@ export function Footer() {
             <h4 className="text-sm font-semibold mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-primary">Help Center</a>
+                <span className="text-muted-foreground/50">Help Center (Coming Soon)</span>
               </li>
               <li>
-                <a href="#" className="hover:text-primary">Contact</a>
+                <span className="text-muted-foreground/50">Contact (Coming Soon)</span>
               </li>
-        
             </ul>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t mt-16 pt-8 text-center text-sm text-muted-foreground space-y-2">
+        <div className="border-t mt-16 pt-8 text-center text-sm text-muted-foreground">
           <p>
-            &copy; {new Date().getFullYear()} KeepMyCert by Detached Solutions LLC. All rights reserved.
+            &copy; {new Date().getFullYear()} KeepMyCert. All rights reserved.
           </p>
-          <div className="space-x-4">
-            <Link href="/legal/privacy" className="hover:text-primary">
-              Privacy
-            </Link>
-            <Link href="/legal/cookie" className="hover:text-primary">
-              Cookies
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
