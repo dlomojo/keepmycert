@@ -1,4 +1,4 @@
-import { Plus, Crown, Zap, FileDown } from 'lucide-react';
+import { Plus, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UpgradeCard } from '@/components/ui/upgrade-card';

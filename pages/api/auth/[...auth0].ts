@@ -1,8 +1,9 @@
 import { handleAuth, handleCallback } from '@auth0/nextjs-auth0';
 import { prisma } from '@/lib/db';
+import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default handleAuth({
-  async callback(req, res) {
+  async callback(req: NextApiRequest, res: NextApiResponse) {
     try {
       await handleCallback(req, res, {
         afterCallback: async (req, res, session) => {
