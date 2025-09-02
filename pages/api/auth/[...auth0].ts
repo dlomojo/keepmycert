@@ -6,7 +6,7 @@ export default handleAuth({
   async callback(req: NextApiRequest, res: NextApiResponse) {
     try {
       await handleCallback(req, res, {
-        afterCallback: async (req, res, session) => {
+        afterCallback: async (req: NextApiRequest, res: NextApiResponse, session: any) => {
           // Ensure local user exists & keep email synced
           const email = session.user.email!;
           const name = session.user.name || session.user.nickname || email.split('@')[0];
