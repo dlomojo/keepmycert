@@ -1,4 +1,4 @@
-import { handleAuth, handleCallback } from '@auth0/nextjs-auth0';
+import { handleAuth, handleCallback, Session } from '@auth0/nextjs-auth0';
 import { prisma } from '@/lib/db';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
@@ -6,10 +6,12 @@ export default handleAuth({
   async callback(req: NextApiRequest, res: NextApiResponse) {
     try {
       await handleCallback(req, res, {
-        afterCallback: async (req: NextApiRequest, res: NextApiResponse, session: { user: { email: string; name?: string; nickname?: string } }) => {
+        afterCallback: async (req: NextApiRequest, res: NextApiResponse, session: Session) => {
           // Ensure local user exists & keep email synced
-          const email = session.user.email!;
-          const name = session.user.name || session.user.nickname || email.split('@')[0];
+          const email = session.user?.email;
+          if (!email) return session;
+          
+          const name = session.user?.name || session.user?.nickname || email.split('@')[0];
           
           await prisma.user.upsert({
             where: { email },
