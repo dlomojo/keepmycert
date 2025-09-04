@@ -23,7 +23,7 @@ model User {
   teamMemberships TeamMember[]
   ownedTeams     Team[]
   subscription   Subscription?
-  teamInvites    TeamInvite[]
+  teamInvites    TeamInvite[] @relation("UserTeamInvites")
 
   @@map("users")
 }
@@ -74,6 +74,7 @@ model TeamMember {
 model TeamInvite {
   id        String    @id @default(cuid())
   teamId    String
+  userId    String?
   email     String
   token     String    @unique
   expiresAt DateTime
@@ -81,6 +82,7 @@ model TeamInvite {
   createdAt DateTime  @default(now())
 
   team Team @relation(fields: [teamId], references: [id])
+  user User? @relation("UserTeamInvites", fields: [userId], references: [id])
 
   @@map("team_invites")
 }
