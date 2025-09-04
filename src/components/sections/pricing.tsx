@@ -2,6 +2,16 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
+const handleCheckout = async (priceId: string) => {
+  const response = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ priceId })
+  });
+  const { url } = await response.json();
+  window.location.href = url;
+};
+
 export function PricingSection() {
   const plans = [
     {
@@ -20,7 +30,7 @@ export function PricingSection() {
     },
     {
       name: "Pro",
-      price: "$9",
+      price: "$15",
       description: "per month",
       features: [
         "Unlimited certifications",
@@ -31,7 +41,8 @@ export function PricingSection() {
         "Export & reporting tools",
         "Calendar integrations",
       ],
-      cta: "Coming Soon",
+      cta: "Get Started",
+      priceId: "price_1S3bcaBTSETMx8kbqVeCXdRG",
       popular: true,
     },
     {
@@ -93,7 +104,8 @@ export function PricingSection() {
                       : ''
                   }`}
                   variant={plan.popular ? 'default' : 'outline'}
-                  disabled
+                  onClick={() => plan.name === 'Pro' ? handleCheckout((plan as any).priceId) : undefined}
+                  disabled={plan.name !== 'Pro'}
                 >
                   {plan.cta}
                 </Button>
