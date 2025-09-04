@@ -3,6 +3,14 @@ import type { Session } from '@auth0/nextjs-auth0';
 import { prisma } from '@/lib/db';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
+interface Auth0Session extends Omit<Session, 'user'> {
+  user: {
+    email: string;
+    name?: string;
+    nickname?: string;
+  };
+}
+
 export default handleAuth({
   async callback(req: NextApiRequest, res: NextApiResponse) {
     try {
@@ -10,7 +18,7 @@ export default handleAuth({
         afterCallback: async (
           req: NextApiRequest,
           res: NextApiResponse,
-          session: Session
+          session: Auth0Session
         ) => {
           // Ensure local user exists & keep email synced
           const email = session.user.email!;
