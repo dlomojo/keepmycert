@@ -40,9 +40,9 @@ export function Header() {
             >
               Pricing
             </button>
-            <a href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Dashboard
-            </a>
+            </Link>
             <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
               Sign Up
             </Button>
@@ -71,9 +71,9 @@ export function Header() {
               >
                 Pricing
               </button>
-              <a href="/dashboard" className="block text-sm font-medium text-muted-foreground hover:text-primary">
+              <Link href="/dashboard" className="block text-sm font-medium text-muted-foreground hover:text-primary">
                 Dashboard
-              </a>
+              </Link>
               <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
                 Sign Up
               </Button>

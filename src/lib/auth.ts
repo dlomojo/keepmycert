@@ -5,8 +5,11 @@ import { prisma } from './db';
 export type CurrentUser = {
   id: string;
   email: string;
+  name: string;
   plan: 'FREE' | 'PRO' | 'TEAM';
   timezone: string;
+  teamRole?: string;
+  teamId?: string;
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -21,8 +24,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     return {
       id: user.id,
       email: user.email,
+      name: user.name || 'User',
       plan: user.plan as 'FREE' | 'PRO' | 'TEAM',
-      timezone: user.timezone,
+      timezone: user.timezone || 'UTC',
+      teamRole: undefined,
+      teamId: undefined,
     };
   } catch (error) {
     console.error('Error getting current user:', error);

@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { Plus, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,11 +36,11 @@ export default async function FreeDashboard() {
                 <Crown className="mr-2 h-4 w-4" />
                 Upgrade to Pro
               </Button>
-              <a href="/profile">
+              <Link href="/profile">
                 <Button variant="ghost" size="sm">
                   Manage Profile
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

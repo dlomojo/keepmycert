@@ -56,7 +56,7 @@ export function PricingSection() {
         "SSO integration",
         "Dedicated account manager",
       ],
-      cta: "Coming Next Month",
+      cta: "Coming Soon",
       popular: false,
     },
   ];

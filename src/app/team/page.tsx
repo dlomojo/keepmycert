@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { Users, Plus, Shield, BarChart3, Settings, Download, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +14,7 @@ export default async function TeamDashboard() {
   if (!user) {
     redirect('/api/auth/login');
   }
-  const isManager = canManageTeam(user.plan, user.teamRole);
+  const isManager = canManageTeam(user.plan, user.teamRole as any);
   const teamMembers = user.teamId ? getTeamMembers(user.teamId) : [];
 
   return (
@@ -38,11 +39,11 @@ export default async function TeamDashboard() {
                     Invite Member
                   </Button>
                 )}
-                <a href="/profile">
+                <Link href="/profile">
                   <Button variant="ghost" size="sm">
                     Manage Profile
                   </Button>
-                </a>
+                </Link>
               </div>
             </div>
           </div>
