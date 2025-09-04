@@ -43,7 +43,10 @@ export function Header() {
             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Dashboard
             </Link>
-            <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+            <Button 
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+              onClick={() => window.location.href = '/api/auth/login'}
+            >
               Sign Up
             </Button>
           </div>
@@ -74,7 +77,10 @@ export function Header() {
               <Link href="/dashboard" className="block text-sm font-medium text-muted-foreground hover:text-primary">
                 Dashboard
               </Link>
-              <Button className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700">
+              <Button 
+                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                onClick={() => window.location.href = '/api/auth/login'}
+              >
                 Sign Up
               </Button>
             </div>

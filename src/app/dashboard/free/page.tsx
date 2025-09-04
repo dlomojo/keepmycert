@@ -49,7 +49,10 @@ export default async function FreeDashboard() {
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Add Certificate Card */}
-          <Card className={`border-dashed border-2 ${canAddMore ? 'hover:border-primary cursor-pointer' : 'border-muted-foreground/25'}`}>
+          <Card 
+            className={`border-dashed border-2 ${canAddMore ? 'hover:border-primary cursor-pointer' : 'border-muted-foreground/25'}`}
+            onClick={() => canAddMore && alert('Certificate upload coming soon! This will open the AI-powered document parser.')}
+          >
             <CardHeader className="text-center">
               <Plus className={`mx-auto h-8 w-8 ${canAddMore ? 'text-primary' : 'text-muted-foreground'}`} />
               <CardTitle className={canAddMore ? '' : 'text-muted-foreground'}>

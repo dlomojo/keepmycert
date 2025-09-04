@@ -18,7 +18,7 @@ export function PricingSection() {
       price: "$0",
       description: "Perfect for individuals",
       features: [
-        "Track up to 5 certifications",
+        "Track up to 3 certifications",
         "Basic AI document parsing",
         "Email renewal reminders",
         "Community support",
