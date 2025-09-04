@@ -31,6 +31,11 @@ export default async function ProDashboard() {
                 <Plus className="mr-2 h-4 w-4" />
                 Add Certificate
               </Button>
+              <a href="/profile">
+                <Button variant="ghost" size="sm">
+                  Manage Profile
+                </Button>
+              </a>
             </div>
           </div>
         </div>

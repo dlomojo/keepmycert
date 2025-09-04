@@ -35,6 +35,11 @@ export default async function FreeDashboard() {
                 <Crown className="mr-2 h-4 w-4" />
                 Upgrade to Pro
               </Button>
+              <a href="/profile">
+                <Button variant="ghost" size="sm">
+                  Manage Profile
+                </Button>
+              </a>
             </div>
           </div>
         </div>

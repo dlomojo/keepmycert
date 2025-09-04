@@ -33,7 +33,7 @@ export default function AboutPage() {
               About <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">KeepMyCert</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              We're revolutionizing how IT professionals manage their certifications with AI-powered automation, 
+              We&apos;re revolutionizing how IT professionals manage their certifications with AI-powered automation, 
               intelligent insights, and career acceleration tools.
             </p>
           </div>
@@ -254,7 +254,7 @@ export default function AboutPage() {
             </p>
             <div className="flex flex-col gap-4 min-[400px]:flex-row justify-center">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="lg">
-                Get Started
+                Sign Up
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Button variant="outline" size="lg">

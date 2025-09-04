@@ -4,15 +4,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-const handleCheckout = async (priceId: string) => {
-  const response = await fetch('/api/checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ priceId })
-  });
-  const { url } = await response.json();
-  window.location.href = url;
-};
+
 
 const handleMilitaryCheckout = () => {
   const idmeUrl = `https://api.id.me/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_IDME_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/pricing')}&response_type=code&scope=military`;

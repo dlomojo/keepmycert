@@ -20,7 +20,7 @@ export async function POST(req: Request) {
   });
   
   const userData = await userResponse.json();
-  const isMilitary = userData.attributes?.some((attr: any) => attr.handle === 'military');
+  const isMilitary = userData.attributes?.some((attr: { handle: string }) => attr.handle === 'military');
   
   return Response.json({ verified: isMilitary });
 }

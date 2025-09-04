@@ -23,7 +23,7 @@ export function HeroSection() {
             
             <div className="flex flex-col gap-4 min-[400px]:flex-row">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="lg">
-                Get Started
+                Sign Up
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
               <Link href="/about">

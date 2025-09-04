@@ -31,12 +31,19 @@ export default async function TeamDashboard() {
               <Badge variant="secondary">
                 {user.teamRole} • Team Plan
               </Badge>
-              {isManager && (
-                <Button size="sm">
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Invite Member
-                </Button>
-              )}
+              <div className="flex items-center space-x-2">
+                {isManager && (
+                  <Button size="sm">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Invite Member
+                  </Button>
+                )}
+                <a href="/profile">
+                  <Button variant="ghost" size="sm">
+                    Manage Profile
+                  </Button>
+                </a>
+              </div>
             </div>
           </div>
         </div>
