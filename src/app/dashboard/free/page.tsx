@@ -1,13 +1,19 @@
+import { redirect } from 'next/navigation';
 import { Plus, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { UpgradeCard } from '@/components/ui/upgrade-card';
 import { CertificationCard } from '@/components/dashboard/certification-card';
-import { getCurrentUser, getUserCertifications } from '@/lib/mock-data';
+import { getCurrentUser } from '@/lib/auth';
+import { getUserCertifications } from '@/lib/mock-data';
 import { getCertificationLimit } from '@/lib/feature-gates';
 
-export default function FreeDashboard() {
-  const user = getCurrentUser();
+export default async function FreeDashboard() {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    redirect('/api/auth/login');
+  }
   const certifications = getUserCertifications(user.id);
   const certLimit = getCertificationLimit(user.plan);
   const canAddMore = certifications.length < certLimit;

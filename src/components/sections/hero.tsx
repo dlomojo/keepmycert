@@ -1,5 +1,6 @@
 import { ArrowRight, Bot, Brain, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export function HeroSection() {
   return (
@@ -22,12 +23,14 @@ export function HeroSection() {
             
             <div className="flex flex-col gap-4 min-[400px]:flex-row">
               <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="lg">
-                Coming Soon
+                Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
+              <Link href="/about">
+                <Button variant="outline" size="lg">
+                  Learn More
+                </Button>
+              </Link>
             </div>
             
             <div className="grid grid-cols-3 gap-8 pt-8">

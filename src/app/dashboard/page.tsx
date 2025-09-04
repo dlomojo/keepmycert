@@ -1,8 +1,12 @@
 import { redirect } from 'next/navigation';
-import { getCurrentUser } from '@/lib/mock-data';
+import { getCurrentUser } from '@/lib/auth';
 
-export default function DashboardPage() {
-  const user = getCurrentUser();
+export default async function DashboardPage() {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    redirect('/api/auth/login');
+  }
   
   // Plan-aware routing
   switch (user.plan) {

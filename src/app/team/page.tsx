@@ -1,12 +1,18 @@
+import { redirect } from 'next/navigation';
 import { Users, Plus, Shield, BarChart3, Settings, Download, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getCurrentUser, getTeamMembers } from '@/lib/mock-data';
+import { getCurrentUser } from '@/lib/auth';
+import { getTeamMembers } from '@/lib/mock-data';
 import { canManageTeam } from '@/lib/feature-gates';
 
-export default function TeamDashboard() {
-  const user = getCurrentUser();
+export default async function TeamDashboard() {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    redirect('/api/auth/login');
+  }
   const isManager = canManageTeam(user.plan, user.teamRole);
   const teamMembers = user.teamId ? getTeamMembers(user.teamId) : [];
 

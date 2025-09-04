@@ -1,3 +1,5 @@
+"use client";
+
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +14,11 @@ const handleCheckout = async (priceId: string) => {
   window.location.href = url;
 };
 
+const handleMilitaryCheckout = () => {
+  const idmeUrl = `https://api.id.me/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_IDME_CLIENT_ID}&redirect_uri=${encodeURIComponent(window.location.origin + '/pricing')}&response_type=code&scope=military`;
+  window.location.href = idmeUrl;
+};
+
 export function PricingSection() {
   const plans = [
     {
@@ -22,10 +29,9 @@ export function PricingSection() {
         "Track up to 5 certifications",
         "Basic AI document parsing",
         "Email renewal reminders",
-        "Mobile app access",
         "Community support",
       ],
-      cta: "Coming Soon",
+      cta: "Get Started",
       popular: false,
     },
     {
@@ -58,7 +64,7 @@ export function PricingSection() {
         "SSO integration",
         "Dedicated account manager",
       ],
-      cta: "Coming Soon",
+      cta: "Coming Next Month",
       popular: false,
     },
   ];
@@ -97,18 +103,32 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <Button 
-                  className={`w-full ${
-                    plan.popular 
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700' 
-                      : ''
-                  }`}
-                  variant={plan.popular ? 'default' : 'outline'}
-                  onClick={() => plan.name === 'Pro' ? handleCheckout((plan as any).priceId) : undefined}
-                  disabled={plan.name !== 'Pro'}
-                >
-                  {plan.cta}
-                </Button>
+                <div className="space-y-2">
+                  <Button 
+                    className={`w-full ${
+                      plan.popular 
+                        ? 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700' 
+                        : ''
+                    }`}
+                    variant={plan.popular ? 'default' : 'outline'}
+                    onClick={() => {
+                      if (plan.name === 'Pro') window.location.href = '/api/auth/login?returnTo=/checkout/pro';
+                      else if (plan.name === 'Free') window.location.href = '/api/auth/login?returnTo=/dashboard';
+                    }}
+                    disabled={plan.name === 'Team'}
+                  >
+                    {plan.cta}
+                  </Button>
+                  {plan.name === 'Pro' && (
+                    <Button 
+                      variant="outline" 
+                      className="w-full text-xs"
+                      onClick={handleMilitaryCheckout}
+                    >
+                      Military Discount (ID.me)
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

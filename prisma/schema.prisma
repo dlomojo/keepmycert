@@ -79,8 +79,10 @@ model TeamInvite {
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
+  invitedById String?
 
   team Team @relation(fields: [teamId], references: [id])
+  invitedBy User? @relation(fields: [invitedById], references: [id])
 
   @@map("team_invites")
 }
