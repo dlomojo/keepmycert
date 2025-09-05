@@ -12,6 +12,16 @@ const handleMilitaryCheckout = () => {
 };
 
 export function PricingSection() {
+  const handleCheckout = async (priceId: string) => {
+    const response = await fetch('/api/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ priceId })
+    });
+    const { url } = await response.json();
+    window.location.href = url;
+  };
+
   const plans = [
     {
       name: "Free",
@@ -104,8 +114,8 @@ export function PricingSection() {
                     }`}
                     variant={plan.popular ? 'default' : 'outline'}
                     onClick={() => {
-                      if (plan.name === 'Pro') window.location.href = '/api/auth/login?returnTo=/checkout/pro';
-                      else if (plan.name === 'Free') window.location.href = '/api/auth/login?returnTo=/dashboard';
+                      if (plan.name === 'Pro' && 'priceId' in plan && plan.priceId) handleCheckout(plan.priceId);
+                      else if (plan.name === 'Free') window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.origin + '/dashboard');
                     }}
                     disabled={plan.name === 'Team'}
                   >

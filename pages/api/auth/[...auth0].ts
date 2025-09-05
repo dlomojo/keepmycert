@@ -7,28 +7,28 @@ export default handleAuth({
     try {
       await handleCallback(req, res, {
         afterCallback: async (req: NextApiRequest, res: NextApiResponse, session: Session) => {
-          // Ensure local user exists & keep email synced
           const email = session.user?.email;
-          if (!email) return session;
-          
-          const name = session.user?.name || session.user?.nickname || email.split('@')[0];
-          
-          await prisma.user.upsert({
-            where: { email },
-            update: { name },
-            create: { 
-              email, 
-              name,
-              plan: 'FREE' 
-            },
-          });
-          
+          if (email) {
+            try {
+              await prisma.user.upsert({
+                where: { email },
+                update: { name: session.user?.name || email.split('@')[0] },
+                create: { 
+                  email, 
+                  name: session.user?.name || email.split('@')[0],
+                  plan: 'FREE'
+                }
+              });
+            } catch (dbError) {
+              console.error('Database error during user creation:', dbError);
+            }
+          }
           return session;
         }
       });
     } catch (error) {
       console.error('Auth callback error:', error);
-      res.status(500).end('Auth error');
+      res.redirect('/?error=auth_failed');
     }
   }
 });

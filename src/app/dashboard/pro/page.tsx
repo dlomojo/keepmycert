@@ -7,6 +7,8 @@ import { CertificationCard } from '@/components/dashboard/certification-card';
 import { getCurrentUser } from '@/lib/auth';
 import { getUserCertifications } from '@/lib/mock-data';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ProDashboard() {
   const user = await getCurrentUser();
   

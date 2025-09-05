@@ -1,12 +1,14 @@
 "use client";
 
-import { Shield, Menu, X } from "lucide-react";
+import { Shield, Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import Link from "next/link";
+import { useUser } from '@auth0/nextjs-auth0/client';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user } = useUser();
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -43,12 +45,26 @@ export function Header() {
             <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
               Dashboard
             </Link>
-            <Button 
-              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-              onClick={() => window.location.href = '/api/auth/login'}
-            >
-              Sign Up
-            </Button>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm text-muted-foreground">Hi, {user.name || user.email}</span>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.href = '/api/auth/logout'}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <Button 
+                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                onClick={() => window.location.href = '/api/auth/login'}
+              >
+                Sign Up
+              </Button>
+            )}
           </div>
 
           <button 
@@ -77,12 +93,26 @@ export function Header() {
               <Link href="/dashboard" className="block text-sm font-medium text-muted-foreground hover:text-primary">
                 Dashboard
               </Link>
-              <Button 
-                className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                onClick={() => window.location.href = '/api/auth/login'}
-              >
-                Sign Up
-              </Button>
+              {user ? (
+                <div className="space-y-2">
+                  <div className="text-sm text-muted-foreground">Hi, {user.name || user.email}</div>
+                  <Button 
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => window.location.href = '/api/auth/logout'}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
+                  onClick={() => window.location.href = '/api/auth/login'}
+                >
+                  Sign Up
+                </Button>
+              )}
             </div>
           </div>
         )}
