@@ -16,9 +16,11 @@ export default handleAuth({
                 create: { 
                   email, 
                   name: session.user?.name || email.split('@')[0],
-                  plan: 'FREE'
+                  plan: 'FREE',
+                  timezone: 'UTC'
                 }
               });
+              console.log('User created/updated successfully:', email);
             } catch (dbError) {
               console.error('Database error during user creation:', dbError);
             }

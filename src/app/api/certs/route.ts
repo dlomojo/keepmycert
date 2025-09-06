@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/db';
-import { requireUser } from '@/lib/auth';
-import { getCertLimit } from '@/lib/features';
+import { getCurrentUser } from '@/lib/auth';
+import { getCertificationLimit } from '@/lib/feature-gates';
 
 export const runtime = 'nodejs';
 
@@ -16,7 +16,10 @@ const CreateCert = z.object({
 
 export async function POST(req: Request) {
   try {
-    const user = await requireUser();
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const body = await req.json();
     const data = CreateCert.parse(body);
 
@@ -25,7 +28,7 @@ export async function POST(req: Request) {
       const count = await prisma.certification.count({ 
         where: { ownerUserId: user.id } 
       });
-      if (count >= getCertLimit(user.plan)) {
+      if (count >= getCertificationLimit(user.plan)) {
         return NextResponse.json(
           { 
             error: 'UPGRADE_REQUIRED', 
@@ -59,14 +62,17 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    const user = await requireUser();
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     
     const certs = await prisma.certification.findMany({
       where: { ownerUserId: user.id },
       orderBy: [{ expiresOn: 'asc' }, { createdAt: 'desc' }],
     });
 
-    return NextResponse.json({ certs });
+    return NextResponse.json({ certifications: certs });
   } catch (error) {
     console.error('Get certs error:', error);
     return NextResponse.json(

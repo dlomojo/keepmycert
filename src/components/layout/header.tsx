@@ -42,9 +42,15 @@ export function Header() {
             >
               Pricing
             </button>
-            <Link href="/dashboard" className="text-sm font-medium text-muted-foreground hover:text-primary">
+            <button 
+              onClick={() => {
+                localStorage.setItem('redirectAfterLogin', '/dashboard/free');
+                window.location.href = '/api/auth/login';
+              }}
+              className="text-sm font-medium text-muted-foreground hover:text-primary"
+            >
               Dashboard
-            </Link>
+            </button>
             {user ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm text-muted-foreground">Hi, {user.name || user.email}</span>
@@ -60,7 +66,7 @@ export function Header() {
             ) : (
               <Button 
                 className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                onClick={() => window.location.href = '/api/auth/login'}
+                onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard'}
               >
                 Sign Up
               </Button>
@@ -90,9 +96,15 @@ export function Header() {
               >
                 Pricing
               </button>
-              <Link href="/dashboard" className="block text-sm font-medium text-muted-foreground hover:text-primary">
+              <button 
+                onClick={() => {
+                  localStorage.setItem('redirectAfterLogin', '/dashboard/free');
+                  window.location.href = '/api/auth/login';
+                }}
+                className="block text-sm font-medium text-muted-foreground hover:text-primary w-full text-left"
+              >
                 Dashboard
-              </Link>
+              </button>
               {user ? (
                 <div className="space-y-2">
                   <div className="text-sm text-muted-foreground">Hi, {user.name || user.email}</div>
@@ -108,7 +120,7 @@ export function Header() {
               ) : (
                 <Button 
                   className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                  onClick={() => window.location.href = '/api/auth/login'}
+                  onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard'}
                 >
                   Sign Up
                 </Button>
