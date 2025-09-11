@@ -1,226 +1,409 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useUser } from '@auth0/nextjs-auth0/client';
-import { Plus, Crown, Shield, TrendingUp, Clock, Award } from 'lucide-react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { UploadCertModal } from '@/components/modals/upload-cert-modal';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Plus, 
+  Upload, 
+  Bell, 
+  FileText, 
+  Award, 
+  TrendingUp, 
+  Lock, 
+  Circle,
+  Clock,
+  BarChart3,
+  HelpCircle,
+  Zap
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+interface User {
+  name?: string;
+  email?: string;
+}
+
+export const dynamic = 'force-dynamic';
 
 export default function FreeDashboardPage() {
-  const { user: authUser, isLoading: authLoading } = useUser();
-  const [certifications, setCertifications] = useState<{id: string; title: string; issuer: string; status: string; expiresOn: string}[]>([]);
-  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
-    if (authLoading) return;
-    
-    if (!authUser) {
-      window.location.href = '/api/auth/login?returnTo=/dashboard/free';
-      return;
-    }
-
-    async function loadCerts() {
+    const checkAuth = async () => {
       try {
-        const certsResponse = await fetch('/api/certs');
-        if (certsResponse.ok) {
-          const certsData = await certsResponse.json();
-          setCertifications(certsData.certifications || []);
+        const response = await fetch('/api/auth/me');
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        } else {
+          window.location.href = '/api/auth/login';
         }
-      } catch (error) {
-        console.error('Error loading certifications:', error);
+      } catch {
+        window.location.href = '/api/auth/login';
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    }
-    loadCerts();
-  }, [authUser, authLoading]);
+    };
+    checkAuth();
+  }, []);
 
-  const handleUploadSuccess = async () => {
-    try {
-      const response = await fetch('/api/certs');
-      if (response.ok) {
-        const data = await response.json();
-        setCertifications(data.certifications || []);
-      }
-    } catch (error) {
-      console.error('Error reloading certifications:', error);
-    }
-  };
-
-  if (authLoading || isLoading) {
+  if (loading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">Loading...</div>;
   }
 
-  if (!authUser) {
+  if (!user) {
     return null;
   }
-  
-  const certLimit = 3;
-  const canAddMore = certifications.length < certLimit;
+
+  const certCount = 0;
+  const maxCerts = 3;
+  const quickstartProgress = 0;
+
+  const handleUpgrade = () => {
+    window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.origin + '/checkout/pro');
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
-      <div className="border-b bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60 shadow-sm">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <div className="border-b bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600">
-                  <Shield className="h-5 w-5 text-white" />
-                </div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">Dashboard</h1>
-              </div>
-              <p className="text-muted-foreground ml-13">Welcome back, {authUser.name || authUser.email?.split('@')[0] || 'User'}</p>
+              <h1 className="text-2xl font-bold">Welcome, {user.name || 'User'}!</h1>
+              <p className="text-muted-foreground">Manage your IT certifications with AI-powered insights</p>
             </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-sm text-muted-foreground bg-white/60 px-3 py-1 rounded-full border">
-                Free Plan ({certifications.length}/{certLimit} certificates)
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-muted-foreground">
+                Free Plan • {certCount}/{maxCerts} certificates
               </div>
-              <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="sm">
-                <Crown className="mr-2 h-4 w-4" />
+              <Button onClick={handleUpgrade} size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-600">
                 Upgrade to Pro
               </Button>
-              <Link href="/profile">
-                <Button variant="outline" size="sm" className="bg-white/60">
-                  Manage Profile
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card 
-            className={`border-dashed border-2 bg-white/60 backdrop-blur transition-all duration-200 ${canAddMore ? 'hover:border-cyan-400 hover:bg-gradient-to-br hover:from-cyan-50 hover:to-blue-50 cursor-pointer hover:shadow-lg' : 'border-muted-foreground/25'}`}
-            onClick={() => canAddMore && setIsUploadModalOpen(true)}
-          >
-            <CardHeader className="text-center">
-              <div className={`mx-auto h-12 w-12 rounded-full flex items-center justify-center mb-2 ${canAddMore ? 'bg-gradient-to-br from-cyan-100 to-blue-100' : 'bg-gray-100'}`}>
-                <Plus className={`h-6 w-6 ${canAddMore ? 'text-cyan-600' : 'text-muted-foreground'}`} />
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Quickstart Checklist */}
+        <Card className="mb-8 border-cyan-200 bg-gradient-to-r from-cyan-50 to-blue-50">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg flex items-center">
+                  <Zap className="mr-2 h-5 w-5 text-cyan-600" />
+                  Quick Setup ({quickstartProgress}/3 completed)
+                </CardTitle>
+                <CardDescription>Get started in 2 minutes</CardDescription>
               </div>
-              <CardTitle className={`${canAddMore ? 'text-gray-900' : 'text-muted-foreground'}`}>
-                {canAddMore ? 'Add Certificate' : 'Certificate Limit Reached'}
-              </CardTitle>
-              <CardDescription>
-                {canAddMore 
-                  ? 'Upload your IT certification' 
-                  : `Free plan allows up to ${certLimit} certificates`
-                }
-              </CardDescription>
-            </CardHeader>
-            {!canAddMore && (
-              <CardContent className="text-center">
-                <Button className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700" size="sm">
-                  <Crown className="mr-2 h-4 w-4" />
-                  Upgrade to Add More
-                </Button>
-              </CardContent>
-            )}
-          </Card>
+              <Progress value={(quickstartProgress / 3) * 100} className="w-24" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 md:grid-cols-3">
+              <div className="flex items-center space-x-2">
+                <Circle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Add your first certificate</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Circle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Turn on email reminders</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Circle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm">Connect your calendar</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          {certifications.map((cert) => (
-            <Card key={cert.id} className="bg-white/60 backdrop-blur hover:shadow-lg transition-all duration-200 hover:bg-white/80">
+        {/* Plan Usage Meter */}
+        <Card className="mb-8">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Free Plan Usage</span>
+              <Button variant="link" onClick={handleUpgrade} className="text-xs p-0 h-auto">
+                Upgrade →
+              </Button>
+            </div>
+            <Progress value={(certCount / maxCerts) * 100} className="mb-2" />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{certCount} of {maxCerts} certificates used</span>
+              <span>{maxCerts - certCount} remaining</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Main Content Grid */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* Left Column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Add Certificate - Primary CTA */}
+            <Card className="border-2 border-dashed border-primary/50 hover:border-primary cursor-pointer bg-primary/5">
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                    <Plus className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold mb-2">Add Your First Certificate</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Upload a certificate and let AI extract all the details automatically
+                  </p>
+                  <Button className="bg-primary">
+                    <Upload className="mr-2 h-4 w-4" />
+                    Upload Certificate
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Empty State Helpers */}
+            <Card>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center">
-                      <Award className="h-5 w-5 text-cyan-600" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg text-gray-900">{cert.title}</CardTitle>
-                      <CardDescription className="text-gray-600">{cert.issuer}</CardDescription>
-                    </div>
-                  </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    cert.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                    cert.status === 'EXPIRING_SOON' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-red-100 text-red-700'
-                  }`}>
-                    {cert.status.replace('_', ' ')}
-                  </div>
-                </div>
+                <CardTitle className="text-lg">Quick Start Options</CardTitle>
+                <CardDescription>Choose how you&apos;d like to add certificates</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center text-sm text-gray-600">
-                  <Clock className="h-4 w-4 mr-2" />
-                  <span>Expires: {new Date(cert.expiresOn).toLocaleDateString()}</span>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <Button variant="outline" className="justify-start h-auto p-4">
+                    <Award className="mr-3 h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Popular Templates</div>
+                      <div className="text-xs text-muted-foreground">CompTIA, AWS, Cisco</div>
+                    </div>
+                  </Button>
+                  <Button variant="outline" className="justify-start h-auto p-4">
+                    <FileText className="mr-3 h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Import from CSV</div>
+                      <div className="text-xs text-muted-foreground">Bulk upload existing data</div>
+                    </div>
+                  </Button>
+                  <Button variant="outline" className="justify-start h-auto p-4">
+                    <TrendingUp className="mr-3 h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Connect Credly</div>
+                      <div className="text-xs text-muted-foreground">Sync digital badges</div>
+                    </div>
+                  </Button>
+                  <Button variant="outline" className="justify-start h-auto p-4">
+                    <Zap className="mr-3 h-5 w-5" />
+                    <div className="text-left">
+                      <div className="font-medium">Try Demo Cert</div>
+                      <div className="text-xs text-muted-foreground">See how it works</div>
+                    </div>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
 
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold mb-6 text-gray-900">Your Progress</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            <Card className="bg-white/60 backdrop-blur hover:shadow-lg transition-all duration-200">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-gray-700">Total Certificates</CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-cyan-100 to-blue-100 flex items-center justify-center">
-                    <Award className="h-4 w-4 text-cyan-600" />
-                  </div>
-                </div>
+            {/* Expiring Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Clock className="mr-2 h-5 w-5" />
+                  Renewal Timeline
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">{certifications.length}</div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {certLimit - certifications.length} remaining in free plan
+                <div className="flex space-x-4">
+                  <Badge variant="outline" className="flex-1 justify-center py-2">
+                    Next 30 days: 0
+                  </Badge>
+                  <Badge variant="outline" className="flex-1 justify-center py-2">
+                    Next 60 days: 0
+                  </Badge>
+                  <Badge variant="outline" className="flex-1 justify-center py-2">
+                    Next 90 days: 0
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-3 text-center">
+                  Add certificates to see your renewal timeline
                 </p>
               </CardContent>
             </Card>
-            
-            <Card className="bg-white/60 backdrop-blur hover:shadow-lg transition-all duration-200">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-gray-700">Expiring Soon</CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-yellow-100 to-orange-100 flex items-center justify-center">
-                    <Clock className="h-4 w-4 text-yellow-600" />
-                  </div>
-                </div>
+
+            {/* Recent Activity Feed */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Recent Activity</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-yellow-600">
-                  {certifications.filter(c => c.status === 'EXPIRING_SOON').length}
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                  <p className="text-sm">No activity yet</p>
+                  <p className="text-xs mt-1">Your certificate updates will appear here</p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Certificates expiring in 90 days
-                </p>
               </CardContent>
             </Card>
-            
-            <Card className="bg-white/60 backdrop-blur hover:shadow-lg transition-all duration-200">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium text-gray-700">Active Status</CardTitle>
-                  <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-green-600" />
+          </div>
+
+          {/* Right Column */}
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid gap-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Certificates</p>
+                      <p className="text-2xl font-bold">{certCount}</p>
+                    </div>
+                    <Award className="h-8 w-8 text-muted-foreground" />
                   </div>
+                  <p className="text-xs text-muted-foreground mt-2">Free plan: {maxCerts} max</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Expiring Soon</p>
+                      <p className="text-2xl font-bold">0</p>
+                    </div>
+                    <Clock className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">Within 90 days</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Renewal Steps Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">How to Renew</CardTitle>
+                <CardDescription>Quick links to certification vendors</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => window.open('https://www.comptia.org/continuing-education', '_blank')}
+                >
+                  CompTIA Renewals
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => window.open('https://aws.amazon.com/certification/recertification/', '_blank')}
+                >
+                  AWS Recertification
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full justify-start"
+                  onClick={() => window.open('https://www.cisco.com/c/en/us/training-events/training-certifications/recertification-policy.html', '_blank')}
+                >
+                  Cisco Continuing Ed
+                </Button>
+                <div className="pt-2">
+                  <input 
+                    type="text" 
+                    placeholder="Search other vendors..." 
+                    className="w-full px-3 py-2 text-sm border rounded-md"
+                  />
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Reminders Preview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <Bell className="mr-2 h-5 w-5" />
+                  Smart Reminders
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-green-600">
-                  {certifications.filter(c => c.status === 'ACTIVE').length}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Email notifications</span>
+                    <Button variant="outline" size="sm">Enable</Button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Calendar sync</span>
+                    <Button variant="outline" size="sm">Connect</Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Get notified 90, 30, and 7 days before expiration
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Currently valid certificates
-                </p>
+              </CardContent>
+            </Card>
+
+            {/* Document Vault Teaser */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <FileText className="mr-2 h-5 w-5" />
+                  Document Vault
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-4">
+                  <p className="text-sm mb-2">0/3 files uploaded</p>
+                  <Progress value={0} className="mb-3" />
+                  <div className="flex items-center justify-center text-xs text-muted-foreground mb-3">
+                    <Lock className="mr-1 h-3 w-3" />
+                    AI extraction available in Pro
+                  </div>
+                  <Button variant="outline" size="sm" className="w-full">
+                    Upload Certificate PDF
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Insights Teaser */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center">
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  Career Insights
+                  <Lock className="ml-2 h-4 w-4 text-muted-foreground" />
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-4">
+                  <div className="w-16 h-16 mx-auto mb-3 bg-muted rounded-full flex items-center justify-center">
+                    <BarChart3 className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Unlock AI-powered career analytics and salary insights
+                  </p>
+                  <Button onClick={handleUpgrade} size="sm" variant="outline" className="w-full">
+                    Upgrade for Insights
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Support CTA */}
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center">
+                  <HelpCircle className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
+                  <h3 className="font-medium mb-2">Need Help?</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    2-minute setup guide
+                  </p>
+                  <Button variant="outline" size="sm" className="w-full">
+                    View Setup Guide
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-      
-      <UploadCertModal 
-        isOpen={isUploadModalOpen}
-        onClose={() => setIsUploadModalOpen(false)}
-        onSuccess={handleUploadSuccess}
-      />
     </div>
   );
 }
