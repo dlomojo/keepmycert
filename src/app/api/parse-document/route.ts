@@ -46,15 +46,45 @@ export async function POST(req: Request) {
       max_tokens: 300
     });
 
-    const result = JSON.parse(completion.choices[0].message.content || '{}');
+    if (!completion.choices || completion.choices.length === 0) {
+      throw new Error('No completion received');
+    }
+
+    let result;
+    try {
+      result = JSON.parse(completion.choices[0].message.content || '{}');
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      throw new Error('Invalid response format');
+    }
+    
+    // Sanitize and validate output
+    const sanitizeString = (str: unknown) => {
+      if (typeof str !== 'string') return null;
+      return str.replace(/<[^>]*>/g, '').trim().slice(0, 200);
+    };
+    
+    const validateDate = (dateStr: unknown) => {
+      if (typeof dateStr !== 'string') return null;
+      const date = new Date(dateStr);
+      return isNaN(date.getTime()) ? null : dateStr;
+    };
     
     return Response.json({ 
       success: true, 
-      data: result,
+      data: {
+        title: sanitizeString(result.title),
+        issuer: sanitizeString(result.issuer),
+        certificateNumber: sanitizeString(result.certificateNumber),
+        acquiredOn: validateDate(result.acquiredOn),
+        expiresOn: validateDate(result.expiresOn),
+        holderName: sanitizeString(result.holderName)
+      },
       fileUrl: blob.url 
     });
     
   } catch (error) {
+    console.error('Document parse error:', error);
     return Response.json({ 
       error: 'Failed to parse document' 
     }, { status: 500 });

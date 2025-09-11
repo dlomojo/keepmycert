@@ -43,10 +43,7 @@ export function Header() {
               Pricing
             </button>
             <button 
-              onClick={() => {
-                localStorage.setItem('redirectAfterLogin', '/dashboard/free');
-                window.location.href = '/api/auth/login';
-              }}
+              onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard/free'}
               className="text-sm font-medium text-muted-foreground hover:text-primary"
             >
               Dashboard
@@ -66,7 +63,7 @@ export function Header() {
             ) : (
               <Button 
                 className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard'}
+                onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard/free&screen_hint=signup'}
               >
                 Sign Up
               </Button>
@@ -97,10 +94,7 @@ export function Header() {
                 Pricing
               </button>
               <button 
-                onClick={() => {
-                  localStorage.setItem('redirectAfterLogin', '/dashboard/free');
-                  window.location.href = '/api/auth/login';
-                }}
+                onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard/free'}
                 className="block text-sm font-medium text-muted-foreground hover:text-primary w-full text-left"
               >
                 Dashboard
@@ -120,7 +114,7 @@ export function Header() {
               ) : (
                 <Button 
                   className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700"
-                  onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard'}
+                  onClick={() => window.location.href = '/api/auth/login?returnTo=/dashboard/free&screen_hint=signup'}
                 >
                   Sign Up
                 </Button>

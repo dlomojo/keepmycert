@@ -1,16 +1,28 @@
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 export async function GET() {
-  return NextResponse.json({ 
-    auth0Config: {
-      baseUrl: process.env.AUTH0_BASE_URL,
-      issuerUrl: process.env.AUTH0_ISSUER_BASE_URL,
-      clientId: process.env.AUTH0_CLIENT_ID,
-      hasSecret: !!process.env.AUTH0_SECRET,
-      hasClientSecret: !!process.env.AUTH0_CLIENT_SECRET
-    },
-    database: {
-      hasUrl: !!process.env.DATABASE_URL
-    }
-  });
+  try {
+    // Test basic connection
+    await prisma.$connect();
+    
+    // Test user table access
+    const userCount = await prisma.user.count();
+    
+    // Test certification table access  
+    const certCount = await prisma.certification.count();
+    
+    return NextResponse.json({ 
+      status: 'Connected',
+      userCount,
+      certCount,
+      database: process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'unknown'
+    });
+  } catch (error) {
+    return NextResponse.json({ 
+      status: 'Error',
+      error: String(error),
+      database: process.env.DATABASE_URL?.split('@')[1]?.split('/')[0] || 'unknown'
+    }, { status: 500 });
+  }
 }
