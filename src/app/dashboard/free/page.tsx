@@ -19,6 +19,10 @@ import {
   Zap
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import NewsFeed from '@/components/news-feed';
+import RenewalCard from '@/components/renewal-card';
+import CredlyImport from '@/components/credly-import';
+import VendorRenewalDropdown from '@/components/vendor-renewal-dropdown';
 
 interface User {
   name?: string;
@@ -227,6 +231,25 @@ export default function FreeDashboardPage() {
               </CardContent>
             </Card>
 
+            {/* Career News */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">IT Security News</CardTitle>
+                <CardDescription>Stay updated with the latest in your field</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <NewsFeed field="security" />
+              </CardContent>
+            </Card>
+
+            {/* Vendor Renewal Steps */}
+            <div className="grid gap-4 md:grid-cols-2">
+              <RenewalCard vendor="comptia" />
+              <RenewalCard vendor="microsoft" />
+              <RenewalCard vendor="aws" />
+              <RenewalCard vendor="cisco" />
+            </div>
+
             {/* Recent Activity Feed */}
             <Card>
               <CardHeader>
@@ -273,46 +296,8 @@ export default function FreeDashboardPage() {
               </Card>
             </div>
 
-            {/* Renewal Steps Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">How to Renew</CardTitle>
-                <CardDescription>Quick links to certification vendors</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start"
-                  onClick={() => window.open('https://www.comptia.org/continuing-education', '_blank')}
-                >
-                  CompTIA Renewals
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start"
-                  onClick={() => window.open('https://aws.amazon.com/certification/recertification/', '_blank')}
-                >
-                  AWS Recertification
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="w-full justify-start"
-                  onClick={() => window.open('https://www.cisco.com/c/en/us/training-events/training-certifications/recertification-policy.html', '_blank')}
-                >
-                  Cisco Continuing Ed
-                </Button>
-                <div className="pt-2">
-                  <input 
-                    type="text" 
-                    placeholder="Search other vendors..." 
-                    className="w-full px-3 py-2 text-sm border rounded-md"
-                  />
-                </div>
-              </CardContent>
-            </Card>
+            {/* Vendor Renewal Dropdown */}
+            <VendorRenewalDropdown />
 
             {/* Reminders Preview */}
             <Card>
@@ -385,6 +370,9 @@ export default function FreeDashboardPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Credly Import */}
+            <CredlyImport />
 
             {/* Support CTA */}
             <Card>

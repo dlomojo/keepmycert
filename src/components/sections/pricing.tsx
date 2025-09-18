@@ -13,13 +13,17 @@ const handleMilitaryCheckout = () => {
 
 export function PricingSection() {
   const handleCheckout = async (priceId: string) => {
-    const response = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ priceId })
-    });
-    const { url } = await response.json();
-    window.location.href = url;
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priceId })
+      });
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Checkout failed:', error);
+    }
   };
 
   const plans = [

@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useUser } from '@auth0/nextjs-auth0/client';
 
+interface Auth0User {
+  given_name?: string;
+  family_name?: string;
+  [key: string]: unknown;
+}
+
 export default function CompleteProfilePage() {
   const { user, isLoading } = useUser();
   const [firstName, setFirstName] = useState('');
@@ -13,8 +19,9 @@ export default function CompleteProfilePage() {
 
   useEffect(() => {
     if (user) {
-      setFirstName(user.given_name || '');
-      setLastName(user.family_name || '');
+      const auth0User = user as Auth0User;
+      setFirstName(auth0User.given_name || '');
+      setLastName(auth0User.family_name || '');
     }
   }, [user]);
 
@@ -31,6 +38,8 @@ export default function CompleteProfilePage() {
 
       if (response.ok) {
         window.location.href = '/dashboard';
+      } else {
+        console.error('Profile update failed:', response.statusText);
       }
     } catch (error) {
       console.error('Profile update failed:', error);

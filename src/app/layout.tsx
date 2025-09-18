@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { UserProvider } from '@auth0/nextjs-auth0/client';
+import { ClientProviders } from "@/components/client-providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,9 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background antialiased`}
       >
-        <UserProvider>
+        <ClientProviders>
           {children}
-        </UserProvider>
+        </ClientProviders>
       </body>
     </html>
   );
