@@ -74,8 +74,8 @@ export function UploadCertModal({ isOpen, onClose, onSuccess }: UploadCertModalP
       }, 1500);
 
     } catch (error) {
-      console.error('Network Error:', error);
-      setError(`Network error: ${error}`);
+      console.error('Network Error:', error instanceof Error ? error.message : 'Unknown error');
+      setError('Network error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -275,7 +275,8 @@ function PDFUploadForm({ onSuccess, onError, isLoading, setIsLoading }: {
 
       onSuccess(result.data);
     } catch (error) {
-      onError(error instanceof Error ? error.message : 'Failed to parse PDF');
+      console.error('PDF parse error:', error instanceof Error ? error.message : 'Unknown error');
+      onError('Failed to parse PDF. Please try again.');
     } finally {
       setIsLoading(false);
     }

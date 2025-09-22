@@ -15,7 +15,6 @@ import {
   Circle,
   Clock,
   BarChart3,
-  HelpCircle,
   Zap
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -23,6 +22,10 @@ import NewsFeed from '@/components/news-feed';
 import RenewalCard from '@/components/renewal-card';
 import CredlyImport from '@/components/credly-import';
 import VendorRenewalDropdown from '@/components/vendor-renewal-dropdown';
+import { DashboardHeader } from '@/components/layout/dashboard-header';
+import { AddCertificateModal } from '@/components/modals/add-certificate-modal';
+import { CsvImportModal } from '@/components/modals/csv-import-modal';
+import { CredlyImportModal } from '@/components/modals/credly-import-modal';
 
 interface User {
   name?: string;
@@ -34,6 +37,11 @@ export const dynamic = 'force-dynamic';
 export default function FreeDashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showCsvModal, setShowCsvModal] = useState(false);
+  const [showCredlyModal, setShowCredlyModal] = useState(false);
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [calendarSync] = useState(false);
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -70,9 +78,122 @@ export default function FreeDashboardPage() {
     window.location.href = '/api/auth/login?returnTo=' + encodeURIComponent(window.location.origin + '/checkout/pro');
   };
 
+  const handleAddCertificate = async (data: Record<string, string>) => {
+    try {
+      const response = await fetch('/api/certs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: data['name'],
+          issuer: data['vendor'],
+          certificateNumber: data['certificationId'],
+          acquiredOn: data['issueDate'] ? new Date(data['issueDate']).toISOString() : undefined,
+          expiresOn: data['expirationDate'] ? new Date(data['expirationDate']).toISOString() : undefined
+        })
+      });
+      
+      if (response.ok) {
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Failed to add certificate');
+      }
+    } catch (error) {
+      console.error('Failed to add certificate:', error);
+      alert('Failed to add certificate');
+    }
+  };
+
+  const handleCsvImport = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/import/csv', {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert(`Successfully imported ${result.imported} certifications${result.skipped > 0 ? `. ${result.skipped} skipped due to plan limits.` : '.'}`);
+        window.location.reload();
+      } else {
+        alert(result.error || 'Failed to import CSV');
+      }
+    } catch (error) {
+      console.error('Failed to import CSV:', error);
+      alert('Failed to import CSV');
+    }
+  };
+
+  const handleCredlyImport = async (data: Record<string, unknown>, method: string) => {
+    try {
+      const response = await fetch('/api/credly/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ method, data })
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        const message = result.skipped > 0 ? 
+          `Imported ${result.imported} badges. ${result.skipped} skipped due to plan limits.` :
+          `Successfully imported ${result.imported} badges from Credly!`;
+        alert(message);
+        window.location.reload();
+      } else {
+        alert(result.error || 'Failed to import from Credly');
+      }
+    } catch (error) {
+      console.error('Failed to import from Credly:', error);
+      alert('Failed to import from Credly');
+    }
+  };
+
+  const handleEmailNotifications = async () => {
+    setEmailNotifications(!emailNotifications);
+    // TODO: Implement Resend email notification setup
+  };
+
+  const handleCalendarSync = async () => {
+    if (!calendarSync) {
+      try {
+        const response = await fetch('/api/calendar/connect', { method: 'POST' });
+        const { authUrl } = await response.json();
+        
+        if (authUrl) {
+          window.open(authUrl, '_blank', 'width=500,height=600');
+        }
+      } catch (error) {
+        console.error('Failed to connect calendar:', error);
+        alert('Failed to connect calendar');
+      }
+    } else {
+      try {
+        const response = await fetch('/api/calendar/sync', { method: 'POST' });
+        const result = await response.json();
+        
+        if (response.ok) {
+          alert(result.message);
+        } else {
+          alert(result.error || 'Failed to sync calendar');
+        }
+      } catch (error) {
+        console.error('Failed to sync calendar:', error);
+        alert('Failed to sync calendar');
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Dashboard Header with Toolbar */}
+      <DashboardHeader user={user} />
+      
+      {/* Welcome Section */}
       <div className="border-b bg-background/95 backdrop-blur">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
@@ -157,9 +278,9 @@ export default function FreeDashboardPage() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Upload a certificate and let AI extract all the details automatically
                   </p>
-                  <Button className="bg-primary">
+                  <Button className="bg-primary" onClick={() => setShowAddModal(true)}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Upload Certificate
+                    Add Certificate
                   </Button>
                 </div>
               </CardContent>
@@ -173,32 +294,18 @@ export default function FreeDashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-3 md:grid-cols-2">
-                  <Button variant="outline" className="justify-start h-auto p-4">
-                    <Award className="mr-3 h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-medium">Popular Templates</div>
-                      <div className="text-xs text-muted-foreground">CompTIA, AWS, Cisco</div>
-                    </div>
-                  </Button>
-                  <Button variant="outline" className="justify-start h-auto p-4">
+                  <Button variant="outline" className="justify-start h-auto p-4" onClick={() => setShowCsvModal(true)}>
                     <FileText className="mr-3 h-5 w-5" />
                     <div className="text-left">
                       <div className="font-medium">Import from CSV</div>
                       <div className="text-xs text-muted-foreground">Bulk upload existing data</div>
                     </div>
                   </Button>
-                  <Button variant="outline" className="justify-start h-auto p-4">
+                  <Button variant="outline" className="justify-start h-auto p-4" onClick={() => setShowCredlyModal(true)}>
                     <TrendingUp className="mr-3 h-5 w-5" />
                     <div className="text-left">
                       <div className="font-medium">Connect Credly</div>
                       <div className="text-xs text-muted-foreground">Sync digital badges</div>
-                    </div>
-                  </Button>
-                  <Button variant="outline" className="justify-start h-auto p-4">
-                    <Zap className="mr-3 h-5 w-5" />
-                    <div className="text-left">
-                      <div className="font-medium">Try Demo Cert</div>
-                      <div className="text-xs text-muted-foreground">See how it works</div>
                     </div>
                   </Button>
                 </div>
@@ -311,11 +418,23 @@ export default function FreeDashboardPage() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Email notifications</span>
-                    <Button variant="outline" size="sm">Enable</Button>
+                    <Button 
+                      variant={emailNotifications ? "default" : "outline"} 
+                      size="sm"
+                      onClick={handleEmailNotifications}
+                    >
+                      {emailNotifications ? "Enabled" : "Enable"}
+                    </Button>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Calendar sync</span>
-                    <Button variant="outline" size="sm">Connect</Button>
+                    <Button 
+                      variant={calendarSync ? "default" : "outline"} 
+                      size="sm"
+                      onClick={handleCalendarSync}
+                    >
+                      {calendarSync ? "Connected" : "Connect"}
+                    </Button>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Get notified 90, 30, and 7 days before expiration
@@ -340,8 +459,15 @@ export default function FreeDashboardPage() {
                     <Lock className="mr-1 h-3 w-3" />
                     AI extraction available in Pro
                   </div>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Upload Certificate PDF
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full" 
+                    onClick={handleUpgrade}
+                    disabled
+                  >
+                    <Lock className="mr-2 h-3 w-3" />
+                    Pro Feature - PDF Upload
                   </Button>
                 </div>
               </CardContent>
@@ -374,24 +500,29 @@ export default function FreeDashboardPage() {
             {/* Credly Import */}
             <CredlyImport />
 
-            {/* Support CTA */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <HelpCircle className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                  <h3 className="font-medium mb-2">Need Help?</h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    2-minute setup guide
-                  </p>
-                  <Button variant="outline" size="sm" className="w-full">
-                    View Setup Guide
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <AddCertificateModal 
+        isOpen={showAddModal} 
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleAddCertificate}
+      />
+      <CsvImportModal 
+        isOpen={showCsvModal} 
+        onClose={() => setShowCsvModal(false)}
+        onImport={handleCsvImport}
+        maxCerts={maxCerts}
+      />
+      <CredlyImportModal 
+        isOpen={showCredlyModal} 
+        onClose={() => setShowCredlyModal(false)}
+        onImport={handleCredlyImport}
+        maxCerts={maxCerts}
+      />
     </div>
   );
 }

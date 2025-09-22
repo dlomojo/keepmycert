@@ -4,6 +4,7 @@ import { Plus, Brain, Zap, FileDown, Paperclip, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CertificationCard } from '@/components/dashboard/certification-card';
+import { DashboardHeader } from '@/components/layout/dashboard-header';
 import { getCurrentUser } from '@/lib/auth';
 import { getUserCertifications } from '@/lib/mock-data';
 
@@ -19,6 +20,10 @@ export default async function ProDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Dashboard Header with Toolbar */}
+      <DashboardHeader user={user} />
+      
+      {/* Welcome Section */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">

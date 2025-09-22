@@ -1,12 +1,16 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
-  // Enable this if you need to import components from outside src directory
   experimental: {
     externalDir: true
   },
-
+  typescript: {
+    ignoreBuildErrors: false
+  },
+  eslint: {
+    ignoreDuringBuilds: false
+  }
 };
 
-module.exports = nextConfig;
+export default nextConfig;

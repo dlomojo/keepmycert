@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@auth0/nextjs-auth0';
 import { getCertificationLimit } from '@/lib/feature-gates';
 import { rateLimit } from '@/lib/rate-limit';
+import { getUserProperty } from '@/lib/env';
 
 export const runtime = 'nodejs';
 
@@ -17,27 +18,26 @@ const CreateCert = z.object({
 
 export async function POST(req: Request) {
   try {
-    // Rate limiting
-    const rateLimitResult = rateLimit(req as NextRequest, 5, 60000); // 5 requests per minute
+    const rateLimitResult = rateLimit(req as NextRequest, 5, 60000);
     if (!rateLimitResult.success) {
       return NextResponse.json(
         { error: 'Too many requests' },
         { status: 429, headers: { 'Retry-After': '60' } }
       );
     }
-    const session = await getSession();
-    const email = session?.user?.email;
     
-    if (!email) {
+    const session = await getSession();
+    const email = getUserProperty(session?.user, 'email') as string | undefined;
+    
+    if (!email || !session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get or create user with Auth0 profile data
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      const fullName = session.user?.name || '';
-      const firstName = session.user?.given_name || fullName.split(' ')[0] || '';
-      const lastName = session.user?.family_name || fullName.split(' ').slice(1).join(' ') || '';
+      const fullName = getUserProperty(session.user, 'name') as string || '';
+      const firstName = getUserProperty(session.user, 'given_name') as string || fullName.split(' ')[0] || '';
+      const lastName = getUserProperty(session.user, 'family_name') as string || fullName.split(' ').slice(1).join(' ') || '';
       
       user = await prisma.user.create({
         data: {
@@ -49,10 +49,10 @@ export async function POST(req: Request) {
         }
       });
     }
+    
     const body = await req.json();
     const data = CreateCert.parse(body);
 
-    // Check certification limit
     const count = await prisma.certification.count({ 
       where: { ownerUserId: user.id } 
     });
@@ -70,8 +70,8 @@ export async function POST(req: Request) {
     const cert = await prisma.certification.create({
       data: {
         title: data.title,
-        issuer: data.issuer,
-        certificateNumber: data.certificateNumber,
+        issuer: data.issuer || null,
+        certificateNumber: data.certificateNumber || null,
         acquiredOn: data.acquiredOn ? new Date(data.acquiredOn) : null,
         expiresOn: data.expiresOn ? new Date(data.expiresOn) : null,
         status: data.expiresOn ? 
@@ -95,18 +95,17 @@ export async function POST(req: Request) {
 export async function GET() {
   try {
     const session = await getSession();
-    const email = session?.user?.email;
+    const email = getUserProperty(session?.user, 'email') as string | undefined;
     
-    if (!email) {
+    if (!email || !session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get or create user with Auth0 profile data
     let user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
-      const fullName = session.user?.name || '';
-      const firstName = session.user?.given_name || fullName.split(' ')[0] || '';
-      const lastName = session.user?.family_name || fullName.split(' ').slice(1).join(' ') || '';
+      const fullName = getUserProperty(session.user, 'name') as string || '';
+      const firstName = getUserProperty(session.user, 'given_name') as string || fullName.split(' ')[0] || '';
+      const lastName = getUserProperty(session.user, 'family_name') as string || fullName.split(' ').slice(1).join(' ') || '';
       
       user = await prisma.user.create({
         data: {
