@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
 import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
+import { isValidStripeSessionId, sanitizeForLog } from '@/lib/security';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -9,7 +10,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get('session_id');
   
-  if (!sessionId) {
+  if (!sessionId || !isValidStripeSessionId(sessionId)) {
     return Response.redirect(new URL('/dashboard?error=no_session', req.url));
   }
 
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
 
     return Response.redirect(new URL('/dashboard/pro?success=true', req.url));
   } catch (error) {
-    console.error('Checkout success error:', error);
+    console.error('Checkout success error:', sanitizeForLog(error instanceof Error ? error.message : 'Unknown error'));
     return Response.redirect(new URL('/dashboard?error=upgrade_failed', req.url));
   }
 }

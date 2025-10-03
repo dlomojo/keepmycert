@@ -1,11 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
 import { prisma } from '@/lib/db';
 import { getCertificationLimit } from '@/lib/feature-gates';
 import { CredlyImportRequest, CredlyBadge, CredlyProfileResponse, CredlyFileData, ProcessedBadge } from '@/lib/types/credly';
+import { sanitizeForLog } from '@/lib/security';
+import { validateCSRF } from '@/lib/csrf';
+import { applyRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: Request) {
   try {
+    // Rate limiting
+    const rateLimitResult = applyRateLimit(req as NextRequest, 'IMPORT_CREDLY');
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests', retryAfter: rateLimitResult.retryAfter },
+        { 
+          status: 429, 
+          headers: { 
+            'Retry-After': rateLimitResult.retryAfter.toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString()
+          } 
+        }
+      );
+    }
+    
+    // CSRF protection
+    const isValidCSRF = await validateCSRF(req as NextRequest);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 403 });
+    }
+    
     const session = await getSession();
     const email = session?.user?.email;
     
@@ -70,7 +95,7 @@ export async function POST(req: Request) {
         });
         imported.push(created);
       } catch (error) {
-        console.error('Failed to import badge:', badge, error);
+        console.error('Failed to import badge:', sanitizeForLog(badge.name), error instanceof Error ? error.message : 'Unknown error');
       }
     }
 
@@ -81,7 +106,7 @@ export async function POST(req: Request) {
     });
 
   } catch (error) {
-    console.error('Credly import error:', error);
+    console.error('Credly import error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json({ error: 'Import failed' }, { status: 500 });
   }
 }
@@ -105,7 +130,7 @@ async function processBadgeLinks(links: string[]): Promise<ProcessedBadge[]> {
         });
       }
     } catch (error) {
-      console.error('Failed to fetch badge:', link, error);
+      console.error('Failed to fetch badge:', sanitizeForLog(link), error instanceof Error ? error.message : 'Unknown error');
     }
   }
   
@@ -124,7 +149,7 @@ async function processBadgeFiles(fileData: CredlyFileData[]): Promise<ProcessedB
         expiresAt: data.expires || data.expires_at || null
       });
     } catch (error) {
-      console.error('Failed to parse badge data:', error);
+      console.error('Failed to parse badge data:', error instanceof Error ? error.message : 'Unknown error');
     }
   }
   
@@ -149,7 +174,7 @@ async function processProfileUrl(profileUrl: string): Promise<ProcessedBadge[]> 
       expiresAt: badge.expires_at || null
     }));
   } catch (error) {
-    console.error('Failed to fetch profile:', profileUrl, error);
+    console.error('Failed to fetch profile:', sanitizeForLog(profileUrl), error instanceof Error ? error.message : 'Unknown error');
     return [];
   }
 }

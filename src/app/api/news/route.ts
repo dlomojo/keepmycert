@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { sanitizeString, sanitizeUrl } from '@/lib/security';
 
 interface NewsArticle {
   title: string;
@@ -38,12 +39,12 @@ export async function GET(req: NextRequest) {
 
     const json = await r.json();
     const items = (json.articles || []).map((a: NewsArticle) => ({
-      title: a.title,
-      source: typeof a.source === 'object' ? a.source?.name : a.source,
-      url: a.url,
-      image: a.urlToImage,
+      title: sanitizeString(a.title),
+      source: typeof a.source === 'object' ? sanitizeString(a.source?.name) : sanitizeString(a.source),
+      url: sanitizeUrl(a.url),
+      image: sanitizeUrl(a.urlToImage),
       publishedAt: a.publishedAt,
-      description: a.description
+      description: sanitizeString(a.description)
     }));
 
     return NextResponse.json({ field, items });

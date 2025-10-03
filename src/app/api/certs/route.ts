@@ -3,8 +3,9 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { getSession } from '@auth0/nextjs-auth0';
 import { getCertificationLimit } from '@/lib/feature-gates';
-import { rateLimit } from '@/lib/rate-limit';
+import { applyRateLimit } from '@/lib/rate-limit';
 import { getUserProperty } from '@/lib/env';
+import { validateCSRF } from '@/lib/csrf';
 
 export const runtime = 'nodejs';
 
@@ -18,11 +19,25 @@ const CreateCert = z.object({
 
 export async function POST(req: Request) {
   try {
-    const rateLimitResult = rateLimit(req as NextRequest, 5, 60000);
+    // CSRF protection
+    const isValidCSRF = await validateCSRF(req as NextRequest);
+    if (!isValidCSRF) {
+      return NextResponse.json({ error: 'Invalid request' }, { status: 403 });
+    }
+    
+    const rateLimitResult = applyRateLimit(req as NextRequest, 'CERT_CREATE');
     if (!rateLimitResult.success) {
       return NextResponse.json(
-        { error: 'Too many requests' },
-        { status: 429, headers: { 'Retry-After': '60' } }
+        { error: 'Too many requests', retryAfter: rateLimitResult.retryAfter },
+        { 
+          status: 429, 
+          headers: { 
+            'Retry-After': rateLimitResult.retryAfter.toString(),
+            'X-RateLimit-Limit': rateLimitResult.limit.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': new Date(rateLimitResult.resetTime).toISOString()
+          } 
+        }
       );
     }
     

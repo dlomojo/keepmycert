@@ -1,8 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CareerDB, JobMatch } from '@/lib/career-db';
+import { applyRateLimit } from '@/lib/rate-limit';
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const rateLimitResult = applyRateLimit(req, 'CAREER');
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { error: 'Too many requests', retryAfter: rateLimitResult.retryAfter },
+        { 
+          status: 429, 
+          headers: { 
+            'Retry-After': rateLimitResult.retryAfter.toString(),
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString()
+          } 
+        }
+      );
+    }
+    
     const { skills } = await req.json();
     
     if (!skills || !Array.isArray(skills)) {
