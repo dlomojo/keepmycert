@@ -5,6 +5,12 @@ import { env } from '@/lib/env';
 
 export async function GET(req: Request) {
   try {
+    // Check if Google Calendar is configured
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.GOOGLE_REDIRECT_URI) {
+      console.error('Google Calendar not configured. Missing environment variables.');
+      return NextResponse.redirect('/dashboard?error=calendar_not_configured');
+    }
+    
     const { searchParams } = new URL(req.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
@@ -46,7 +52,8 @@ export async function GET(req: Request) {
 
     return NextResponse.redirect('/dashboard?success=calendar_connected');
   } catch (error) {
-    console.error('Calendar callback error:', error);
-    return NextResponse.redirect('/dashboard?error=calendar_auth_failed');
+    console.error('Calendar callback error:', error instanceof Error ? error.message : 'Unknown error');
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.redirect(`/dashboard?error=calendar_auth_failed&details=${encodeURIComponent(errorMessage)}`);
   }
 }

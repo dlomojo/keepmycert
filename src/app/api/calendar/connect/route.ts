@@ -5,6 +5,13 @@ import { env, getUserProperty } from '@/lib/env';
 
 export async function POST() {
   try {
+    // Check if Google Calendar is configured
+    if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.GOOGLE_REDIRECT_URI) {
+      return NextResponse.json({ 
+        error: 'Google Calendar integration not configured. Please contact support.' 
+      }, { status: 503 });
+    }
+    
     const session = await getSession();
     const email = getUserProperty(session?.user, 'email') as string | undefined;
     if (!email) {
