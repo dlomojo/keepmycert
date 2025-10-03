@@ -3,12 +3,14 @@ import { google } from 'googleapis';
 import { prisma } from '@/lib/db';
 import { env } from '@/lib/env';
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://keepmycert.vercel.app';
+
 export async function GET(req: Request) {
   try {
     // Check if Google Calendar is configured
     if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET || !env.GOOGLE_REDIRECT_URI) {
       console.error('Google Calendar not configured. Missing environment variables.');
-      return NextResponse.redirect('/dashboard?error=calendar_not_configured');
+      return NextResponse.redirect(`${BASE_URL}/dashboard?error=calendar_not_configured`);
     }
     
     const { searchParams } = new URL(req.url);
@@ -16,7 +18,7 @@ export async function GET(req: Request) {
     const state = searchParams.get('state');
     
     if (!code || !state) {
-      return NextResponse.redirect('/dashboard?error=calendar_auth_failed');
+      return NextResponse.redirect(`${BASE_URL}/dashboard?error=calendar_auth_failed`);
     }
     
     // Decode secure state token
@@ -27,10 +29,10 @@ export async function GET(req: Request) {
       
       // Validate timestamp (token should be used within 10 minutes)
       if (Date.now() - stateData.timestamp > 10 * 60 * 1000) {
-        return NextResponse.redirect('/dashboard?error=calendar_auth_expired');
+        return NextResponse.redirect(`${BASE_URL}/dashboard?error=calendar_auth_expired`);
       }
     } catch {
-      return NextResponse.redirect('/dashboard?error=calendar_auth_invalid');
+      return NextResponse.redirect(`${BASE_URL}/dashboard?error=calendar_auth_invalid`);
     }
 
     const oauth2Client = new google.auth.OAuth2(
@@ -50,10 +52,10 @@ export async function GET(req: Request) {
       }
     });
 
-    return NextResponse.redirect('/dashboard?success=calendar_connected');
+    return NextResponse.redirect(`${BASE_URL}/dashboard?success=calendar_connected`);
   } catch (error) {
     console.error('Calendar callback error:', error instanceof Error ? error.message : 'Unknown error');
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.redirect(`/dashboard?error=calendar_auth_failed&details=${encodeURIComponent(errorMessage)}`);
+    return NextResponse.redirect(`${BASE_URL}/dashboard?error=calendar_auth_failed&details=${encodeURIComponent(errorMessage)}`);
   }
 }
