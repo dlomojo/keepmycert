@@ -4,12 +4,12 @@ import Link from "next/link";
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50 to-cyan-50">
+    <section className="relative overflow-hidden bg-gradient-to-br from-background via-background to-background dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="container mx-auto px-4 py-16 md:py-24">
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
           <div className="flex flex-col justify-center space-y-8">
             <div className="space-y-4">
-              <div className="inline-block rounded-lg bg-gradient-to-r from-cyan-100 to-blue-100 px-3 py-1 text-sm font-medium text-cyan-800">
+              <div className="inline-block rounded-lg bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-950 dark:to-blue-950 px-3 py-1 text-sm font-medium text-cyan-800 dark:text-cyan-200">
                 🤖 AI-Powered Certificate Management
               </div>
               <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl/none">
@@ -74,7 +74,7 @@ function DashboardPreview() {
         </div>
         
         <div className="p-6 space-y-4">
-          <div className="rounded-lg border bg-green-50 p-4">
+          <div className="rounded-lg border bg-green-50 dark:bg-green-950/30 p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Career Recommendation</span>
               <TrendingUp className="h-4 w-4 text-green-600" />
@@ -84,7 +84,7 @@ function DashboardPreview() {
             </p>
           </div>
           
-          <div className="rounded-lg border bg-blue-50 p-4">
+          <div className="rounded-lg border bg-blue-50 dark:bg-blue-950/30 p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Smart Renewal Alert</span>
               <Bot className="h-4 w-4 text-blue-600" />
