@@ -1,11 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
-import { prisma } from '@/lib/db';
 import { getCertificationLimit } from '@/lib/feature-gates';
 import { CredlyImportRequest, CredlyBadge, CredlyProfileResponse, CredlyFileData, ProcessedBadge } from '@/lib/types/credly';
 import { sanitizeForLog } from '@/lib/security';
 import { validateCSRF } from '@/lib/csrf';
 import { applyRateLimit } from '@/lib/rate-limit';
+import { getOrCreateUser } from '@/lib/user-service';
+import { countUserCertifications, createUserCertification } from '@/lib/certifications';
 
 export async function POST(req: Request) {
   try {
@@ -38,23 +39,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      const fullName = session.user?.name || '';
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: fullName || email.split('@')[0],
-          plan: 'FREE'
-        }
-      });
-    }
+    const fullName = session.user?.name as string | undefined;
+    const firstName = session.user?.given_name as string | undefined;
+    const lastName = session.user?.family_name as string | undefined;
+
+    const user = await getOrCreateUser(email, {
+      name: fullName,
+      firstName,
+      lastName,
+    });
 
     const { method, data }: CredlyImportRequest = await req.json();
     
-    const currentCount = await prisma.certification.count({ 
-      where: { ownerUserId: user.id } 
-    });
+    const currentCount = await countUserCertifications(user.id);
     const limit = getCertificationLimit(user.plan as 'FREE' | 'PRO' | 'TEAM');
     const availableSlots = limit - currentCount;
     
@@ -78,20 +75,19 @@ export async function POST(req: Request) {
     const badgesToImport = badges.slice(0, availableSlots);
     const imported = [];
 
+    const parseDate = (value: string | null) => {
+      if (!value) return undefined;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? undefined : date;
+    };
+
     for (const badge of badgesToImport) {
       try {
-        const created = await prisma.certification.create({
-          data: {
-            title: badge.name,
-            issuer: badge.issuer,
-            acquiredOn: badge.issuedAt ? new Date(badge.issuedAt) : null,
-            expiresOn: badge.expiresAt ? new Date(badge.expiresAt) : null,
-            status: badge.expiresAt ? 
-              (new Date(badge.expiresAt) < new Date() ? 'EXPIRED' : 
-               (new Date(badge.expiresAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 90 ? 'EXPIRING_SOON' : 'ACTIVE') 
-              : 'ACTIVE',
-            ownerUserId: user.id,
-          }
+        const created = await createUserCertification(user.id, {
+          certificateName: badge.name,
+          vendor: badge.issuer,
+          acquiredOn: parseDate(badge.issuedAt),
+          expiresOn: parseDate(badge.expiresAt),
         });
         imported.push(created);
       } catch (error) {

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { sendReminderEmail, generateReminderHTML } from '@/lib/email';
+import { supabaseAdmin } from '@/lib/supabase';
+import { UserRow, UserCertificationRow } from '@/types/database';
 
 export const runtime = 'nodejs';
 
@@ -13,28 +14,24 @@ export async function GET(req: Request) {
   }
 
   try {
-    const users = await prisma.user.findMany({
-      select: { id: true, email: true, name: true, plan: true },
-    });
+    const users = await supabaseAdmin.select<UserRow>('users', 'id,email,name,plan');
 
     let emailsSent = 0;
 
     for (const user of users) {
-      const certs = await prisma.certification.findMany({
-        where: { 
-          ownerUserId: user.id, 
-          expiresOn: { not: null } 
-        },
-        select: { title: true, expiresOn: true }
+      const certRows = await supabaseAdmin.select<UserCertificationRow>('user_certifications', 'certificate_name,expires_on', {
+        eq: { user_id: user.id },
+        is: { expires_on: 'not.is.null' },
       });
 
-      const expiringCerts = certs
+      const expiringCerts = certRows
         .map(cert => {
-          const daysUntil = Math.ceil(
-            ((cert.expiresOn as Date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-          );
-          return { ...cert, daysUntil };
+          const expiresOn = cert.expires_on ? new Date(cert.expires_on) : null;
+          if (!expiresOn) return null;
+          const daysUntil = Math.ceil((expiresOn.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+          return { title: cert.certificate_name, expiresOn, daysUntil };
         })
+        .filter((cert): cert is { title: string; expiresOn: Date; daysUntil: number } => cert !== null)
         .filter(cert => {
           // Free: remind at 30 & 7 days
           // Pro/Team: remind at 30, 14, 7, 1 days
@@ -47,7 +44,7 @@ export async function GET(req: Request) {
           user.name || user.email.split('@')[0],
           expiringCerts.map(cert => ({
             title: cert.title,
-            expiresOn: cert.expiresOn as Date,
+            expiresOn: cert.expiresOn,
             daysUntil: cert.daysUntil
           }))
         );

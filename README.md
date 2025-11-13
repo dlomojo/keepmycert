@@ -71,8 +71,8 @@ IT professionals lose thousands in salary opportunities and career advancement d
 
 ### **Modern Tech Stack**
 - **Frontend**: Next.js 15, TypeScript, Tailwind CSS
-- **Backend**: Serverless API routes, Prisma ORM
-- **Database**: PostgreSQL (Neon)
+- **Backend**: Serverless API routes with Supabase REST
+- **Database**: Supabase PostgreSQL + Storage
 - **Authentication**: Auth0 enterprise security
 - **AI/ML**: Advanced OCR + NLP processing
 - **Infrastructure**: Vercel edge deployment
@@ -131,7 +131,7 @@ IT professionals lose thousands in salary opportunities and career advancement d
 - ✅ **Responsive Design** optimized for all devices
 - ✅ **Profile Management** with enterprise-grade security
 - ✅ **Plan-Based Feature Gates** with upgrade paths
-- ✅ **Database Integration** (PostgreSQL + Prisma)
+- ✅ **Database Integration** (Supabase Postgres + Storage)
 - ✅ **Production-Ready Deployment** (Vercel)
 
 ### **Core Architecture**
@@ -170,8 +170,10 @@ npm install
 # Copy environment template
 cp .env.example .env.local
 
-# Database (Neon PostgreSQL)
-DATABASE_URL="postgresql://..."
+# Supabase
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+SUPABASE_STORAGE_BUCKET="certifications"
 
 # Auth0 (Enterprise Authentication)
 AUTH0_CLIENT_ID="your-client-id"
@@ -181,8 +183,6 @@ AUTH0_ISSUER_BASE_URL="https://your-domain.auth0.com"
 
 ### **3. Launch Application**
 ```bash
-npx prisma generate
-npx prisma db push
 npm run dev
 ```
 

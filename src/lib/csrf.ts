@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { Buffer } from 'node:buffer';
 
 // CSRF protection for state-changing operations
 export async function validateCSRF(req: NextRequest): Promise<boolean> {

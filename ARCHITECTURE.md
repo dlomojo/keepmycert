@@ -15,8 +15,8 @@ AI-powered IT certification management platform with freemium SaaS model, built 
 
 ### **Backend Infrastructure**
 - **Serverless Functions** - Next.js API routes on Vercel Edge
-- **Prisma ORM** - Type-safe database operations
-- **PostgreSQL** - Primary database (Neon serverless)
+- **Supabase PostgREST** - Data access layer via service role key
+- **Supabase PostgreSQL** - Hosted Postgres with storage + auth primitives
 
 ### **Authentication & Security**
 - **Auth0** - Enterprise-grade authentication service
@@ -46,7 +46,7 @@ User visits https://keepmycert.vercel.app
 Click "Sign Up" → Auth0 Universal Login
 ├── User creates account or logs in
 ├── Auth0 callback: /api/auth/callback
-├── User creation in local database (Prisma)
+├── User creation in Supabase (REST API)
 ├── Session establishment
 └── Redirect to dashboard based on plan
 ```
@@ -104,7 +104,7 @@ TeamMember {
 
 ### **Data Flow Pattern**
 ```
-Client Request → Next.js API Route → Prisma ORM → Neon PostgreSQL
+Client Request → Next.js API Route → Supabase REST client → Supabase Postgres
                       ↓
               Feature Gate Check (Plan Limits)
                       ↓
@@ -119,8 +119,6 @@ Client Request → Next.js API Route → Prisma ORM → Neon PostgreSQL
 ```bash
 # Environment Setup
 npm install
-npx prisma generate
-npx prisma db push
 
 # Development Server
 npm run dev  # Runs on localhost:3000
@@ -132,7 +130,6 @@ npm run dev  # Runs on localhost:3000
 2. Vercel Auto-Deploy Trigger
 3. Build Process:
    ├── npm install (dependencies)
-   ├── npx prisma generate (database client)
    ├── npm run build (Next.js optimization)
    ├── TypeScript compilation
    ├── ESLint validation
@@ -172,9 +169,10 @@ AUTH0_ISSUER_BASE_URL=https://dev-ot2xb43hbx5ckhg0.us.auth0.com
 AUTH0_CLIENT_ID=U3k2BBTw1efuEPiFfJspjkXP6Ytlu3Oh
 AUTH0_CLIENT_SECRET=<auth0-secret>
 
-# Database
-DATABASE_URL=<neon-postgres-url>
-DIRECT_URL=<neon-direct-url>
+# Supabase
+SUPABASE_URL=<supabase-url>
+SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+SUPABASE_STORAGE_BUCKET=certifications
 
 # External Services
 RESEND_API_KEY=<resend-key>
@@ -190,7 +188,7 @@ CRON_TOKEN=<secure-random-token>
 - **Server-Only Imports** - Sensitive operations isolated
 - **Plan-Based Access Control** - Feature gates enforced server-side
 - **CSRF Protection** - Built into Next.js API routes
-- **SQL Injection Prevention** - Prisma parameterized queries
+- **SQL Injection Prevention** - Supabase REST parameter binding
 - **Session Security** - Auth0 enterprise-grade tokens
 
 ---
@@ -297,7 +295,7 @@ New User Registration
 - **Edge Caching** - Vercel global CDN
 
 ### **Backend Optimizations**
-- **Connection Pooling** - Neon PostgreSQL pooling
+- **Supabase Connection Reuse** - REST calls via service role key
 - **Serverless Functions** - Auto-scaling compute
 - **Database Indexing** - Optimized queries on user/cert lookups
 - **Caching Strategy** - Static content caching
@@ -320,7 +318,7 @@ Route Sizes (Optimized):
 1. Clone repository
 2. Install dependencies: npm install
 3. Setup environment: cp .env.example .env.local
-4. Database setup: npx prisma db push
+4. Provision Supabase tables & storage
 5. Start development: npm run dev
 ```
 
@@ -339,7 +337,7 @@ vercel env pull .env.local
 ### **Testing Strategy**
 - **TypeScript Compilation** - Build-time type checking
 - **ESLint** - Code quality enforcement
-- **Prisma Validation** - Database schema validation
+- **Supabase Row-Level Policies** - Enforce access control
 - **Auth0 Integration Testing** - Authentication flow validation
 
 ---
@@ -348,7 +346,7 @@ vercel env pull .env.local
 
 ### **Current Architecture Limits**
 - **Vercel Functions**: 10s timeout, 50MB memory
-- **Database**: Neon serverless auto-scaling
+- **Database**: Supabase auto-scaling Postgres
 - **File Storage**: Vercel Blob unlimited
 - **Email**: Resend 100 emails/day (free tier)
 
@@ -356,11 +354,11 @@ vercel env pull .env.local
 ```
 Phase 1: Current (0-1K users)
 ├── Vercel serverless functions
-├── Neon hobby tier
+├── Supabase free tier
 └── Basic monitoring
 
 Phase 2: Growth (1K-10K users)
-├── Neon Pro tier (connection pooling)
+├── Supabase Pro tier (increased throughput)
 ├── Resend Pro (higher limits)
 ├── Advanced monitoring (Sentry)
 └── CDN optimization

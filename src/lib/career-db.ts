@@ -1,4 +1,11 @@
-import { prisma } from './db';
+import { supabaseAdmin } from './supabase';
+import {
+  CareerCredentialRow,
+  CareerCredentialSkillRow,
+  CareerJobRow,
+  CareerJobSkillRow,
+  CareerSkillRow,
+} from '@/types/database';
 
 export type SkillCategory = 'technical' | 'tool' | 'domain' | 'soft';
 export type Importance = 'required' | 'preferred';
@@ -56,47 +63,85 @@ export interface JobMatch {
 
 export class CareerDB {
   static async getSkills(): Promise<Skill[]> {
-    const skills = await prisma.$queryRaw<Skill[]>`
-      SELECT * FROM career_skills ORDER BY name
-    `;
+    const skills = await supabaseAdmin.select<CareerSkillRow>('career_skills', '*', {
+      order: { column: 'name', ascending: true },
+    });
     return skills.map(s => ({
-      ...s,
-      synonyms: s.synonyms || []
+      id: s.id,
+      name: s.name,
+      category: s.category as SkillCategory,
+      description: s.description || '',
+      synonyms: s.synonyms || [],
     }));
   }
 
   static async getJobs(): Promise<Job[]> {
-    return await prisma.$queryRaw<Job[]>`
-      SELECT * FROM career_jobs ORDER BY title
-    `;
+    const jobs = await supabaseAdmin.select<CareerJobRow>('career_jobs', '*', {
+      order: { column: 'title', ascending: true },
+    });
+    return jobs.map(job => ({
+      id: job.id,
+      title: job.title,
+      description: job.description || '',
+      seniority: job.seniority || '',
+      medianSalaryUsd: job.median_salary_usd || 0,
+      growthOutlook: job.growth_outlook || '',
+      sourceRef: job.source_ref || '',
+    }));
   }
 
   static async getJobSkills(jobId: string): Promise<JobSkill[]> {
-    return await prisma.$queryRaw<JobSkill[]>`
-      SELECT * FROM career_job_skills WHERE job_id = ${jobId}
-    `;
+    const jobSkills = await supabaseAdmin.select<CareerJobSkillRow>('career_job_skills', '*', {
+      eq: { job_id: jobId },
+    });
+    return jobSkills.map(js => ({
+      jobId: js.job_id,
+      skillId: js.skill_id,
+      importance: js.importance as Importance,
+      proficiency: js.proficiency as Proficiency,
+    }));
   }
 
   static async getCredentials(): Promise<Credential[]> {
-    return await prisma.$queryRaw<Credential[]>`
-      SELECT * FROM career_credentials ORDER BY name
-    `;
+    const credentials = await supabaseAdmin.select<CareerCredentialRow>('career_credentials', '*', {
+      order: { column: 'name', ascending: true },
+    });
+    return credentials.map(cred => ({
+      id: cred.id,
+      name: cred.name,
+      provider: cred.provider || '',
+      type: (cred.type || 'certification') as CredentialType,
+      level: (cred.level || 'associate') as CredentialLevel,
+      url: cred.url || '',
+      description: cred.description || '',
+    }));
   }
 
   static async getCredentialSkills(credentialId: string): Promise<CredentialSkill[]> {
-    return await prisma.$queryRaw<CredentialSkill[]>`
-      SELECT * FROM career_credential_skills WHERE credential_id = ${credentialId}
-    `;
+    const rows = await supabaseAdmin.select<CareerCredentialSkillRow>('career_credential_skills', '*', {
+      eq: { credential_id: credentialId },
+    });
+    return rows.map(row => ({
+      credentialId: row.credential_id,
+      skillId: row.skill_id,
+    }));
   }
 
   static async findSkillsByJob(jobTitle: string): Promise<string[]> {
-    const jobs = await prisma.$queryRaw<{ skill_id: string }[]>`
-      SELECT js.skill_id 
-      FROM career_jobs j
-      JOIN career_job_skills js ON j.id = js.job_id
-      WHERE LOWER(j.title) LIKE LOWER(${`%${jobTitle}%`})
-    `;
-    return jobs.map(j => j.skill_id);
+    const matchingJobs = await supabaseAdmin.select<CareerJobRow>('career_jobs', 'id', {
+      ilike: { title: `%${jobTitle}%` },
+    });
+
+    if (!matchingJobs.length) {
+      return [];
+    }
+
+    const jobIds = matchingJobs.map(job => job.id);
+    const jobSkills = await supabaseAdmin.select<CareerJobSkillRow>('career_job_skills', 'skill_id', {
+      in: { job_id: jobIds },
+    });
+
+    return jobSkills.map(js => js.skill_id);
   }
 
   static normalizeSkills(inputSkills: string[]): string[] {

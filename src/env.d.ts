@@ -1,9 +1,10 @@
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      // Database
-      DATABASE_URL: string;
-      DIRECT_URL?: string;
+      // Supabase
+      SUPABASE_URL: string;
+      SUPABASE_SERVICE_ROLE_KEY: string;
+      SUPABASE_STORAGE_BUCKET?: string;
       
       // Auth0
       AUTH0_SECRET: string;

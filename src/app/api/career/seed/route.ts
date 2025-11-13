@@ -1,61 +1,15 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
+import {
+  CareerCredentialRow,
+  CareerCredentialSkillRow,
+  CareerJobRow,
+  CareerJobSkillRow,
+  CareerSkillRow,
+} from '@/types/database';
 
 export async function POST() {
   try {
-    // Create tables
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS career_skills (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        category VARCHAR(50) NOT NULL,
-        description TEXT,
-        synonyms TEXT[]
-      )
-    `;
-
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS career_jobs (
-        id VARCHAR(255) PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        seniority VARCHAR(100),
-        median_salary_usd INTEGER,
-        growth_outlook VARCHAR(100),
-        source_ref VARCHAR(255)
-      )
-    `;
-
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS career_job_skills (
-        job_id VARCHAR(255),
-        skill_id VARCHAR(255),
-        importance VARCHAR(50),
-        proficiency VARCHAR(50),
-        PRIMARY KEY (job_id, skill_id)
-      )
-    `;
-
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS career_credentials (
-        id VARCHAR(255) PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        provider VARCHAR(255),
-        type VARCHAR(50),
-        level VARCHAR(50),
-        url TEXT,
-        description TEXT
-      )
-    `;
-
-    await prisma.$executeRaw`
-      CREATE TABLE IF NOT EXISTS career_credential_skills (
-        credential_id VARCHAR(255),
-        skill_id VARCHAR(255),
-        PRIMARY KEY (credential_id, skill_id)
-      )
-    `;
-
     // Seed skills
     const skills = [
       { id: 'sql', name: 'SQL', category: 'technical', description: 'Database querying', synonyms: ['MySQL', 'PostgreSQL'] },
@@ -80,13 +34,15 @@ export async function POST() {
       { id: 'marketing', name: 'Digital Marketing', category: 'domain', description: 'Online marketing', synonyms: ['Marketing'] }
     ];
 
-    for (const skill of skills) {
-      await prisma.$executeRaw`
-        INSERT INTO career_skills (id, name, category, description, synonyms)
-        VALUES (${skill.id}, ${skill.name}, ${skill.category}, ${skill.description}, ${skill.synonyms})
-        ON CONFLICT (id) DO NOTHING
-      `;
-    }
+    const skillRows: Partial<CareerSkillRow>[] = skills.map(skill => ({
+      id: skill.id,
+      name: skill.name,
+      category: skill.category,
+      description: skill.description,
+      synonyms: skill.synonyms,
+    }));
+
+    await supabaseAdmin.insert<CareerSkillRow>('career_skills', skillRows, { upsert: true });
 
     // Seed jobs
     const jobs = [
@@ -104,13 +60,17 @@ export async function POST() {
       { id: 'data-scientist', title: 'Data Scientist', description: 'Build predictive models', seniority: 'Senior', salary: 130000, growth: 'Very High', ref: 'internal' }
     ];
 
-    for (const job of jobs) {
-      await prisma.$executeRaw`
-        INSERT INTO career_jobs (id, title, description, seniority, median_salary_usd, growth_outlook, source_ref)
-        VALUES (${job.id}, ${job.title}, ${job.description}, ${job.seniority}, ${job.salary}, ${job.growth}, ${job.ref})
-        ON CONFLICT (id) DO NOTHING
-      `;
-    }
+    const jobRows: Partial<CareerJobRow>[] = jobs.map(job => ({
+      id: job.id,
+      title: job.title,
+      description: job.description,
+      seniority: job.seniority,
+      median_salary_usd: job.salary,
+      growth_outlook: job.growth,
+      source_ref: job.ref,
+    }));
+
+    await supabaseAdmin.insert<CareerJobRow>('career_jobs', jobRows, { upsert: true });
 
     // Seed job skills
     const jobSkills = [
@@ -137,13 +97,14 @@ export async function POST() {
       { jobId: 'junior-pm', skillId: 'analytics', importance: 'preferred', proficiency: 'basic' }
     ];
 
-    for (const js of jobSkills) {
-      await prisma.$executeRaw`
-        INSERT INTO career_job_skills (job_id, skill_id, importance, proficiency)
-        VALUES (${js.jobId}, ${js.skillId}, ${js.importance}, ${js.proficiency})
-        ON CONFLICT (job_id, skill_id) DO NOTHING
-      `;
-    }
+    const jobSkillRows: Partial<CareerJobSkillRow>[] = jobSkills.map(js => ({
+      job_id: js.jobId,
+      skill_id: js.skillId,
+      importance: js.importance,
+      proficiency: js.proficiency,
+    }));
+
+    await supabaseAdmin.insert<CareerJobSkillRow>('career_job_skills', jobSkillRows, { upsert: true });
 
     // Seed credentials
     const credentials = [
@@ -154,13 +115,17 @@ export async function POST() {
       { id: 'ux-google', name: 'Google UX Design Certificate', provider: 'Google', type: 'certificate', level: 'foundation', url: 'https://coursera.org', description: 'User experience design fundamentals' }
     ];
 
-    for (const cred of credentials) {
-      await prisma.$executeRaw`
-        INSERT INTO career_credentials (id, name, provider, type, level, url, description)
-        VALUES (${cred.id}, ${cred.name}, ${cred.provider}, ${cred.type}, ${cred.level}, ${cred.url}, ${cred.description})
-        ON CONFLICT (id) DO NOTHING
-      `;
-    }
+    const credentialRows: Partial<CareerCredentialRow>[] = credentials.map(cred => ({
+      id: cred.id,
+      name: cred.name,
+      provider: cred.provider,
+      type: cred.type,
+      level: cred.level,
+      url: cred.url,
+      description: cred.description,
+    }));
+
+    await supabaseAdmin.insert<CareerCredentialRow>('career_credentials', credentialRows, { upsert: true });
 
     // Seed credential skills
     const credSkills = [
@@ -175,13 +140,12 @@ export async function POST() {
       { credentialId: 'ux-google', skillId: 'ux' }
     ];
 
-    for (const cs of credSkills) {
-      await prisma.$executeRaw`
-        INSERT INTO career_credential_skills (credential_id, skill_id)
-        VALUES (${cs.credentialId}, ${cs.skillId})
-        ON CONFLICT (credential_id, skill_id) DO NOTHING
-      `;
-    }
+    const credentialSkillRows: Partial<CareerCredentialSkillRow>[] = credSkills.map(cs => ({
+      credential_id: cs.credentialId,
+      skill_id: cs.skillId,
+    }));
+
+    await supabaseAdmin.insert<CareerCredentialSkillRow>('career_credential_skills', credentialSkillRows, { upsert: true });
 
     return NextResponse.json({ success: true, message: 'Career data seeded successfully' });
   } catch (error) {

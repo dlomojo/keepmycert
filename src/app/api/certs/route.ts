@@ -1,11 +1,12 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { z } from 'zod';
-import { prisma } from '@/lib/db';
 import { getSession } from '@auth0/nextjs-auth0';
 import { getCertificationLimit } from '@/lib/feature-gates';
 import { applyRateLimit } from '@/lib/rate-limit';
 import { getUserProperty } from '@/lib/env';
 import { validateCSRF } from '@/lib/csrf';
+import { countUserCertifications, createUserCertification, getUserCertifications, mapCertificationRow } from '@/lib/certifications';
+import { getOrCreateUser } from '@/lib/user-service';
 
 export const runtime = 'nodejs';
 
@@ -48,56 +49,43 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      const fullName = getUserProperty(session.user, 'name') as string || '';
-      const firstName = getUserProperty(session.user, 'given_name') as string || fullName.split(' ')[0] || '';
-      const lastName = getUserProperty(session.user, 'family_name') as string || fullName.split(' ').slice(1).join(' ') || '';
-      
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: fullName || email.split('@')[0],
-          firstName: firstName || undefined,
-          lastName: lastName || undefined,
-          plan: 'FREE'
-        }
-      });
-    }
+    const fullName = getUserProperty(session.user, 'name') as string | undefined;
+    const firstName = getUserProperty(session.user, 'given_name') as string | undefined;
+    const lastName = getUserProperty(session.user, 'family_name') as string | undefined;
+
+    const user = await getOrCreateUser(email, {
+      name: fullName,
+      firstName,
+      lastName,
+    });
     
     const body = await req.json();
     const data = CreateCert.parse(body);
 
-    const count = await prisma.certification.count({ 
-      where: { ownerUserId: user.id } 
-    });
+    const count = await countUserCertifications(user.id);
     const limit = getCertificationLimit(user.plan as 'FREE' | 'PRO' | 'TEAM');
     if (count >= limit) {
       return NextResponse.json(
-        { 
-          error: 'UPGRADE_REQUIRED', 
-          message: `${user.plan} plan allows up to ${limit} certifications.` 
+        {
+          error: 'UPGRADE_REQUIRED',
+          message: `${user.plan} plan allows up to ${limit} certifications.`
         },
         { status: 403 }
       );
     }
 
-    const cert = await prisma.certification.create({
-      data: {
-        title: data.title,
-        issuer: data.issuer || null,
-        certificateNumber: data.certificateNumber || null,
-        acquiredOn: data.acquiredOn ? new Date(data.acquiredOn) : null,
-        expiresOn: data.expiresOn ? new Date(data.expiresOn) : null,
-        status: data.expiresOn ? 
-          (new Date(data.expiresOn) < new Date() ? 'EXPIRED' : 
-           (new Date(data.expiresOn).getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 90 ? 'EXPIRING_SOON' : 'ACTIVE') 
-          : 'ACTIVE',
-        ownerUserId: user.id,
-      }
+    const expiresOn = data.expiresOn ? new Date(data.expiresOn) : null;
+    const acquiredOn = data.acquiredOn ? new Date(data.acquiredOn) : null;
+
+    const created = await createUserCertification(user.id, {
+      certificateName: data.title,
+      vendor: data.issuer,
+      certificateNumber: data.certificateNumber,
+      acquiredOn,
+      expiresOn,
     });
 
-    return NextResponse.json({ cert }, { status: 201 });
+    return NextResponse.json({ cert: mapCertificationRow(created) }, { status: 201 });
   } catch (error) {
     console.error('Create cert error:', error);
     return NextResponse.json(
@@ -116,29 +104,19 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      const fullName = getUserProperty(session.user, 'name') as string || '';
-      const firstName = getUserProperty(session.user, 'given_name') as string || fullName.split(' ')[0] || '';
-      const lastName = getUserProperty(session.user, 'family_name') as string || fullName.split(' ').slice(1).join(' ') || '';
-      
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: fullName || email.split('@')[0],
-          firstName: firstName || undefined,
-          lastName: lastName || undefined,
-          plan: 'FREE'
-        }
-      });
-    }
-    
-    const certs = await prisma.certification.findMany({
-      where: { ownerUserId: user.id },
-      orderBy: [{ expiresOn: 'asc' }, { createdAt: 'desc' }],
+    const fullName = getUserProperty(session.user, 'name') as string | undefined;
+    const firstName = getUserProperty(session.user, 'given_name') as string | undefined;
+    const lastName = getUserProperty(session.user, 'family_name') as string | undefined;
+
+    const user = await getOrCreateUser(email, {
+      name: fullName,
+      firstName,
+      lastName,
     });
 
-    return NextResponse.json({ certifications: certs });
+    const certs = await getUserCertifications(user.id);
+
+    return NextResponse.json({ certifications: certs.map(mapCertificationRow) });
   } catch (error) {
     console.error('Get certs error:', error);
     return NextResponse.json(
