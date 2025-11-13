@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { hasFeature } from '@/lib/features';
 import { icsFromCerts } from '@/lib/ics';
+import { getUserCertifications } from '@/lib/certifications';
 
 export const runtime = 'nodejs';
 
@@ -17,11 +17,18 @@ export async function GET() {
       );
     }
 
-    const certs = await prisma.certification.findMany({
-      where: { ownerUserId: user.id },
-      select: { id: true, title: true, expiresOn: true },
-      orderBy: { expiresOn: 'asc' }
-    });
+    const certRows = await getUserCertifications(user.id);
+    const certs = certRows
+      .map(row => ({
+        id: row.id,
+        title: row.certificate_name,
+        expiresOn: row.expires_on ? new Date(row.expires_on) : null,
+      }))
+      .sort((a, b) => {
+        if (!a.expiresOn) return 1;
+        if (!b.expiresOn) return -1;
+        return a.expiresOn.getTime() - b.expiresOn.getTime();
+      });
 
     const icsContent = icsFromCerts({ 
       certs, 

@@ -1,5 +1,6 @@
 import { handleAuth, handleLogin, handleCallback, Session } from '@auth0/nextjs-auth0';
-import { prisma } from '@/lib/db';
+import { getOrCreateUser, updateUserById } from '@/lib/user-service';
+import { UserRow } from '@/types/database';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 export default handleAuth({
@@ -20,22 +21,17 @@ export default handleAuth({
               const firstName = session.user?.given_name || fullName.split(' ')[0] || '';
               const lastName = session.user?.family_name || fullName.split(' ').slice(1).join(' ') || '';
               
-              await prisma.user.upsert({
-                where: { email },
-                update: { 
-                  name: fullName || email.split('@')[0],
-                  firstName: firstName || undefined,
-                  lastName: lastName || undefined
-                },
-                create: { 
-                  email, 
-                  name: fullName || email.split('@')[0],
-                  firstName: firstName || undefined,
-                  lastName: lastName || undefined,
-                  plan: 'FREE',
-                  timezone: 'UTC'
-                }
+              const user = await getOrCreateUser(email, {
+                name: fullName,
+                firstName,
+                lastName,
               });
+
+              await updateUserById(user.id, {
+                name: fullName || email.split('@')[0],
+                first_name: firstName || null,
+                last_name: lastName || null,
+              } as Partial<UserRow>);
               console.log('User created/updated successfully');
             } catch (dbError) {
               console.error('Database error during user creation:', dbError instanceof Error ? dbError.message : 'Unknown database error');

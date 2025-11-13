@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
-import { prisma } from '@/lib/db';
+import { supabaseAdmin } from '@/lib/supabase';
+import { getUserByEmail } from '@/lib/user-service';
+import { NotificationRow } from '@/types/database';
 
 export async function GET() {
   try {
@@ -11,15 +13,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await getUserByEmail(email);
     if (!user) {
       return NextResponse.json({ notifications: [] });
     }
 
-    const notifications = await prisma.notification.findMany({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 50
+    const notifications = await supabaseAdmin.select<NotificationRow>('notifications', '*', {
+      eq: { user_id: user.id },
+      order: { column: 'created_at', ascending: false },
+      limit: 50,
     });
 
     return NextResponse.json({ notifications });
@@ -38,7 +40,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await getUserByEmail(email);
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -46,17 +48,15 @@ export async function POST(req: Request) {
     const { action, notificationIds } = await req.json();
 
     if (action === 'markAsRead') {
-      await prisma.notification.updateMany({
-        where: { 
-          id: { in: notificationIds },
-          userId: user.id 
-        },
-        data: { read: true }
-      });
+      if (Array.isArray(notificationIds) && notificationIds.length > 0) {
+        await supabaseAdmin.update<NotificationRow>('notifications', { read: true }, {
+          eq: { user_id: user.id },
+          in: { id: notificationIds },
+        });
+      }
     } else if (action === 'markAllAsRead') {
-      await prisma.notification.updateMany({
-        where: { userId: user.id },
-        data: { read: true }
+      await supabaseAdmin.update<NotificationRow>('notifications', { read: true }, {
+        eq: { user_id: user.id },
       });
     }
 

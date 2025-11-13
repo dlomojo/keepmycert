@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx prisma generate && npm run build",
+  "buildCommand": "npm run build",
   "crons": [
     {
       "path": "/api/cron/reminders?token=$CRON_TOKEN",

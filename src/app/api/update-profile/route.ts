@@ -1,5 +1,6 @@
 import { getSession } from '@auth0/nextjs-auth0';
-import { prisma } from '@/lib/db';
+import { getOrCreateUser, updateUserById } from '@/lib/user-service';
+import { UserRow } from '@/types/database';
 
 export async function POST(req: Request) {
   try {
@@ -16,14 +17,13 @@ export async function POST(req: Request) {
       return Response.json({ error: 'First and last name required' }, { status: 400 });
     }
 
-    await prisma.user.update({
-      where: { email },
-      data: {
-        firstName,
-        lastName,
-        name: `${firstName} ${lastName}`
-      }
-    });
+    const user = await getOrCreateUser(email);
+
+    await updateUserById(user.id, {
+      first_name: firstName,
+      last_name: lastName,
+      name: `${firstName} ${lastName}`,
+    } as Partial<UserRow>);
 
     return Response.json({ success: true });
   } catch (error) {

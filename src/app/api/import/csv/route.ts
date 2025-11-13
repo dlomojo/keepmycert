@@ -1,10 +1,11 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
-import { prisma } from '@/lib/db';
 import { getCertificationLimit } from '@/lib/feature-gates';
 import { validateCSRF } from '@/lib/csrf';
 import { sanitizeForLog } from '@/lib/security';
 import { applyRateLimit } from '@/lib/rate-limit';
+import { getOrCreateUser } from '@/lib/user-service';
+import { countUserCertifications, createUserCertification } from '@/lib/certifications';
 
 export async function POST(req: Request) {
   try {
@@ -37,17 +38,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    let user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      const fullName = session.user?.name || '';
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: fullName || email.split('@')[0],
-          plan: 'FREE'
-        }
-      });
-    }
+    const fullName = session.user?.name as string | undefined;
+    const firstName = session.user?.given_name as string | undefined;
+    const lastName = session.user?.family_name as string | undefined;
+
+    const user = await getOrCreateUser(email, {
+      name: fullName,
+      firstName,
+      lastName,
+    });
 
     const formData = await req.formData();
     const file = formData.get('file') as File;
@@ -77,9 +76,7 @@ export async function POST(req: Request) {
       return cert;
     });
 
-    const currentCount = await prisma.certification.count({ 
-      where: { ownerUserId: user.id } 
-    });
+    const currentCount = await countUserCertifications(user.id);
     const limit = getCertificationLimit(user.plan as 'FREE' | 'PRO' | 'TEAM');
     const availableSlots = limit - currentCount;
     
@@ -93,21 +90,28 @@ export async function POST(req: Request) {
     const certsToImport = certData.slice(0, availableSlots);
     const imported = [];
 
+    const parseDate = (value: string | undefined) => {
+      if (!value) return undefined;
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? undefined : date;
+    };
+
     for (const cert of certsToImport) {
       try {
-        const created = await prisma.certification.create({
-          data: {
-            title: cert.name,
-            issuer: cert.vendor,
-            certificateNumber: cert.certificationid || null,
-            acquiredOn: cert.issuedate ? new Date(cert.issuedate) : null,
-            expiresOn: cert.expirationdate ? new Date(cert.expirationdate) : null,
-            status: cert.expirationdate ? 
-              (new Date(cert.expirationdate) < new Date() ? 'EXPIRED' : 
-               (new Date(cert.expirationdate).getTime() - Date.now()) / (1000 * 60 * 60 * 24) <= 90 ? 'EXPIRING_SOON' : 'ACTIVE') 
-              : 'ACTIVE',
-            ownerUserId: user.id,
-          }
+        const name = cert.name || cert.title || cert.certificationname;
+        if (!name) {
+          continue;
+        }
+
+        const acquiredOn = parseDate(cert.issuedate);
+        const expiresOn = parseDate(cert.expirationdate);
+
+        const created = await createUserCertification(user.id, {
+          certificateName: name,
+          vendor: cert.vendor || cert.provider || null,
+          certificateNumber: cert.certificationid || cert.id || null,
+          acquiredOn,
+          expiresOn,
         });
         imported.push(created);
       } catch (error) {

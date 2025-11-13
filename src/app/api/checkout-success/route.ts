@@ -1,8 +1,9 @@
 import { NextRequest } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
-import { prisma } from '@/lib/db';
 import Stripe from 'stripe';
 import { isValidStripeSessionId, sanitizeForLog } from '@/lib/security';
+import { getOrCreateUser, updateUserById } from '@/lib/user-service';
+import { UserRow } from '@/types/database';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -26,11 +27,17 @@ export async function GET(req: NextRequest) {
     const stripeSession = await stripe.checkout.sessions.retrieve(sessionId);
     
     if (stripeSession.payment_status === 'paid') {
-      // Update user plan to PRO
-      await prisma.user.update({
-        where: { email },
-        data: { plan: 'PRO' }
+      const fullName = session.user?.name as string | undefined;
+      const firstName = session.user?.given_name as string | undefined;
+      const lastName = session.user?.family_name as string | undefined;
+
+      const user = await getOrCreateUser(email, {
+        name: fullName,
+        firstName,
+        lastName,
       });
+
+      await updateUserById(user.id, { plan: 'PRO' } as Partial<UserRow>);
     }
 
     return Response.redirect(new URL('/dashboard/pro?success=true', req.url));

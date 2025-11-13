@@ -1,8 +1,9 @@
 // Type-safe environment variable access
 export const env = {
-  // Database
-  DATABASE_URL: process.env['DATABASE_URL']!,
-  DIRECT_URL: process.env['DIRECT_URL'],
+  // Supabase
+  SUPABASE_URL: process.env['SUPABASE_URL']!,
+  SUPABASE_SERVICE_ROLE_KEY: process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+  SUPABASE_STORAGE_BUCKET: process.env['SUPABASE_STORAGE_BUCKET'] || 'certifications',
   
   // Auth0
   AUTH0_SECRET: process.env['AUTH0_SECRET']!,

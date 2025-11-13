@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
+import { Buffer } from 'node:buffer';
 import { google } from 'googleapis';
-import { prisma } from '@/lib/db';
 import { env } from '@/lib/env';
+import { getOrCreateUser, updateUserById } from '@/lib/user-service';
+import { UserRow } from '@/types/database';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://keepmycert.vercel.app';
 
@@ -44,13 +46,12 @@ export async function GET(req: Request) {
     const { tokens } = await oauth2Client.getToken(code);
     
     // Store tokens in database
-    await prisma.user.update({
-      where: { email },
-      data: {
-        googleCalendarTokens: JSON.stringify(tokens),
-        calendarSyncEnabled: true
-      }
-    });
+    const user = await getOrCreateUser(email);
+
+    await updateUserById(user.id, {
+      google_calendar_tokens: JSON.stringify(tokens),
+      calendar_sync_enabled: true,
+    } as Partial<UserRow>);
 
     return NextResponse.redirect(`${BASE_URL}/dashboard?success=calendar_connected`);
   } catch (error) {

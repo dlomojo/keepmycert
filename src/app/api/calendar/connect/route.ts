@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Buffer } from 'node:buffer';
 import { getSession } from '@auth0/nextjs-auth0';
 import { google } from 'googleapis';
 import { env, getUserProperty } from '@/lib/env';
